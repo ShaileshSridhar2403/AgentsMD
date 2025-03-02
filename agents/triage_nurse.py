@@ -27,28 +27,7 @@ class TriageNurseAgent:
             dict: Initial assessment results
         """
         # Create a system prompt for the triage nurse role
-        system_prompt = """
-        You are an experienced emergency department triage nurse with over 15 years of experience.
-        Your task is to perform an initial assessment of a patient based on the provided conversation.
-        Focus on:
-        1. Identifying immediate life threats
-        2. Assessing vital signs stability (if mentioned)
-        3. Determining the severity of the chief complaint
-        4. Estimating resource needs
-        5. Providing an initial ESI (Emergency Severity Index) level recommendation
-        6. Recommending specific nursing interventions
-        
-        The ESI is a 5-level triage system:
-        - Level 1: Requires immediate life-saving intervention
-        - Level 2: High risk situation or severe pain/distress
-        - Level 3: Requires multiple resources but stable vital signs
-        - Level 4: Requires one resource
-        - Level 5: Requires no resources
-        
-        IMPORTANT: Include at least 2-3 specific nursing interventions or actions that should be taken immediately.
-        
-        Provide your assessment in a structured format with clear reasoning.
-        """
+        system_prompt = self._get_system_prompt()
         
         # Create the user prompt
         user_prompt = f"""
@@ -149,7 +128,9 @@ class TriageNurseAgent:
             "resource_needs": "",
             "recommended_esi": "",
             "rationale": "",
-            "notes": ""
+            "immediate_interventions": [],
+            "notes": "",
+            "summary": ""  # Add a summary field
         }
         
         # Extract sections using regex
@@ -177,8 +158,42 @@ class TriageNurseAgent:
         if rationale_match:
             assessment["rationale"] = rationale_match.group(1).strip()
         
-        notes_match = re.search(r'7\.\s*Additional Notes:(.*?)(?=\Z)', response, re.DOTALL)
+        interventions_match = re.search(r'7\.\s*Immediate Nursing Interventions:(.*?)(?=8\.|\Z)', response, re.DOTALL)
+        if interventions_match:
+            interventions_text = interventions_match.group(1).strip()
+            # Extract interventions as a list
+            interventions_list = re.findall(r'(?:^|\n)\s*(?:-|\d+\.)\s*(.*?)(?=\n\s*(?:-|\d+\.)|\Z)', interventions_text, re.DOTALL)
+            assessment["immediate_interventions"] = [i.strip() for i in interventions_list if i.strip()]
+        
+        notes_match = re.search(r'8\.\s*Additional Notes:(.*?)(?=\Z)', response, re.DOTALL)
         if notes_match:
             assessment["notes"] = notes_match.group(1).strip()
         
-        return assessment 
+        # Extract ESI level from the recommended_esi field
+        esi_digit_match = re.search(r'(\d+)', assessment["recommended_esi"])
+        esi_level = esi_digit_match.group(1) if esi_digit_match else ""
+        
+        # Create a summary for display in the discussion
+        assessment["summary"] = f"ESI Level: {esi_level}. Rationale: {assessment['rationale'][:100]}..."
+        
+        return assessment
+    
+    def _get_system_prompt(self):
+        """Get the system prompt for the triage nurse agent"""
+        return """
+        You are an experienced emergency department triage nurse with over 15 years of experience.
+        Your role is to perform the initial assessment of patients and determine their Emergency Severity Index (ESI) level.
+        
+        When assessing a patient, focus on:
+        1. Chief complaint and presenting symptoms with specific details (duration, severity, characteristics)
+        2. Vital signs and their clinical significance
+        3. Patient history relevant to the current presentation
+        4. Risk factors specific to this patient
+        5. Current level of distress with objective observations
+        
+        Provide specific, detailed observations rather than general statements. For example:
+        - Instead of "patient has pain" → "patient reports sharp, stabbing chest pain radiating to left arm, 8/10 severity, started 2 hours ago while at rest"
+        - Instead of "abnormal vital signs" → "tachycardic with HR 112, hypertensive at 162/94, afebrile at 98.6°F"
+        
+        Your assessment should be thorough and focused on objective clinical findings that impact ESI determination.
+        """ 

@@ -25,28 +25,7 @@ class EmergencyPhysicianAgent:
             dict: Detailed clinical assessment
         """
         # Create a system prompt for the emergency physician role
-        system_prompt = """
-        You are an experienced emergency medicine physician with over 20 years of experience.
-        Your task is to perform a detailed clinical assessment of a patient based on the provided conversation.
-        Focus on:
-        1. Identifying potential diagnoses and their likelihood
-        2. Determining the appropriate ESI (Emergency Severity Index) level
-        3. Recommending immediate diagnostic tests and interventions
-        4. Assessing risk factors and potential complications
-        5. Determining disposition (admission, discharge, observation)
-        
-        The ESI is a 5-level triage system:
-        - Level 1: Requires immediate life-saving intervention
-        - Level 2: High risk situation or severe pain/distress
-        - Level 3: Requires multiple resources but stable vital signs
-        - Level 4: Requires one resource
-        - Level 5: Requires no resources
-        
-        IMPORTANT: Provide at least 3-5 specific medical interventions, diagnostic tests, or treatments that should be initiated.
-        Be concrete and practical in your recommendations.
-        
-        Provide your assessment in a structured format with clear medical reasoning.
-        """
+        system_prompt = self._get_system_prompt()
         
         # Create the user prompt
         user_prompt = f"""
@@ -146,7 +125,8 @@ class EmergencyPhysicianAgent:
             "immediate_actions": [],
             "diagnostic_studies": [],
             "risk_assessment": "",
-            "disposition": ""
+            "disposition": "",
+            "summary": ""  # Add a summary field
         }
         
         # Extract sections using regex
@@ -187,4 +167,31 @@ class EmergencyPhysicianAgent:
         if disposition_match:
             assessment["disposition"] = disposition_match.group(1).strip()
         
-        return assessment 
+        # Extract ESI level from the esi_level field
+        esi_digit_match = re.search(r'(\d+)', assessment["esi_level"])
+        esi_level = esi_digit_match.group(1) if esi_digit_match else ""
+        
+        # Create a summary for display in the discussion
+        assessment["summary"] = f"ESI Level: {esi_level}. Assessment: {assessment['clinical_assessment'][:100]}..."
+        
+        return assessment
+    
+    def _get_system_prompt(self):
+        """Get the system prompt for the emergency physician agent"""
+        return """
+        You are an experienced emergency physician with over 20 years of practice.
+        Your role is to evaluate patients in the emergency department and determine their Emergency Severity Index (ESI) level.
+        
+        When assessing a patient, focus on:
+        1. Differential diagnosis with specific conditions based on the presentation
+        2. Risk stratification with specific factors for this patient
+        3. Anticipated resource needs with specific tests and interventions
+        4. Clinical stability assessment with specific parameters
+        5. Urgency of intervention with specific timeframes
+        
+        Provide specific clinical reasoning rather than general statements. For example:
+        - Instead of "patient needs cardiac workup" → "patient requires ECG, troponin series, and cardiology consultation due to concerning presentation of substernal chest pain with radiation to left arm in a 65-year-old male with history of hypertension and diabetes"
+        - Instead of "patient is unstable" → "patient shows signs of compensated shock with tachycardia, normal BP but narrowing pulse pressure, delayed capillary refill of 3 seconds, and cool extremities"
+        
+        Your assessment should demonstrate advanced clinical reasoning and specific medical decision-making relevant to emergency care.
+        """ 

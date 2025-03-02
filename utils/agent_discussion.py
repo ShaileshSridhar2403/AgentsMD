@@ -29,39 +29,79 @@ class AgentDiscussion:
             "5": "Requires no resources"
         }
     
-    def deliberate(self, conversation_text, case_id):
+    def deliberate(self, conversation_text, case_id=None, progress_callback=None):
         """
-        Conduct a deliberation between agents to determine ESI level
+        Conduct a deliberation among agents to determine ESI level
         
         Args:
-            conversation_text (str): The raw nurse-patient conversation
-            case_id (str): Unique case identifier
+            conversation_text (str): The text of the conversation
+            case_id (str, optional): Case identifier
+            progress_callback (callable, optional): Callback function to report progress
             
         Returns:
-            dict: Discussion result with ESI level and justification
+            dict: Results of the deliberation
         """
         # Initialize discussion
         discussion_history = []
         
-        # Round 1: Initial assessments from each agent
-        print("Round 1: Initial assessments from each agent...")
-        initial_assessments = {}
-        for agent in self.agents:
-            print(f"  - {agent.role} is assessing the conversation...")
-            assessment = agent.assess_conversation(conversation_text)
-            initial_assessments[agent.role] = assessment
-            
-            # Add to discussion history
-            discussion_history.append({
-                "role": agent.role,
-                "content": f"Initial assessment: {self._summarize_assessment(assessment)}"
-            })
+        # Initial assessments
+        if progress_callback:
+            progress_callback("Triage Nurse is analyzing the conversation...", 15)
+        
+        nurse_assessment = self.agents[0].assess_conversation(conversation_text)
+        
+        if progress_callback:
+            # Get a summary from the assessment, safely handling different formats
+            nurse_summary = nurse_assessment.get('summary', 'Assessment completed')
+            progress_callback(f"Triage Nurse: {nurse_summary[:100]}...", 25)
+        
+        if progress_callback:
+            progress_callback("Emergency Physician is evaluating the case...", 35)
+        
+        physician_assessment = self.agents[1].assess_conversation(conversation_text)
+        
+        if progress_callback:
+            # Get a summary from the assessment, safely handling different formats
+            physician_summary = physician_assessment.get('summary', 'Assessment completed')
+            progress_callback(f"Emergency Physician: {physician_summary[:100]}...", 45)
+        
+        if progress_callback:
+            progress_callback("Medical Consultant is reviewing the case...", 55)
+        
+        consultant_assessment = self.agents[2].assess_conversation(conversation_text)
+        
+        if progress_callback:
+            # Get a summary from the assessment, safely handling different formats
+            consultant_summary = consultant_assessment.get('summary', 'Assessment completed')
+            progress_callback(f"Medical Consultant: {consultant_summary[:100]}...", 65)
+        
+        # Add to discussion history
+        discussion_history.append({
+            "role": "Triage Nurse",
+            "content": f"Initial assessment: {self._summarize_assessment(nurse_assessment)}"
+        })
+        discussion_history.append({
+            "role": "Emergency Physician",
+            "content": f"Initial assessment: {self._summarize_assessment(physician_assessment)}"
+        })
+        discussion_history.append({
+            "role": "Medical Consultant",
+            "content": f"Initial assessment: {self._summarize_assessment(consultant_assessment)}"
+        })
         
         # Round 2: Agents respond to each other's assessments
         print("Round 2: Agents responding to each other's assessments...")
+        
+        # Create a dictionary of all assessments
+        all_assessments = {
+            self.agents[0].role: nurse_assessment,
+            self.agents[1].role: physician_assessment,
+            self.agents[2].role: consultant_assessment
+        }
+        
         for agent in self.agents:
             print(f"  - {agent.role} is responding to other assessments...")
-            response = agent.respond_to_assessments(conversation_text, initial_assessments)
+            response = agent.respond_to_assessments(conversation_text, all_assessments)
             
             # Add to discussion history
             discussion_history.append({
@@ -88,6 +128,14 @@ class AgentDiscussion:
         
         # Save the full discussion to a file
         self._save_discussion(discussion_history, case_id, final_result)
+        
+        # During discussion
+        if progress_callback:
+            progress_callback("Agents are discussing ESI determination...", 75)
+        
+        # After reaching consensus
+        if progress_callback:
+            progress_callback(f"Consensus reached: ESI Level {final_result['esi_level']} with {final_result['confidence']}% confidence", 85)
         
         return final_result
     
@@ -125,17 +173,45 @@ class AgentDiscussion:
         return filename
     
     def _summarize_assessment(self, assessment):
-        """Summarize an agent's assessment"""
-        if "recommended_esi" in assessment:
-            esi = assessment.get("recommended_esi", "Unknown")
-            rationale = assessment.get("rationale", "No rationale provided")
-            return f"ESI Level: {esi}. Rationale: {rationale}"
-        elif "esi_level" in assessment:
-            esi = assessment.get("esi_level", "Unknown")
-            clinical = assessment.get("clinical_assessment", "No assessment provided")
-            return f"ESI Level: {esi}. Assessment: {clinical}"
+        """Create a summary of an agent's assessment"""
+        # If the assessment already has a summary, use it
+        if assessment.get('summary'):
+            return assessment['summary']
+        
+        # Otherwise, try to create a summary based on available fields
+        esi_level = ""
+        if assessment.get('recommended_esi'):
+            esi_match = re.search(r'(\d+)', assessment['recommended_esi'])
+            if esi_match:
+                esi_level = esi_match.group(1)
+        elif assessment.get('esi_level'):
+            esi_match = re.search(r'(\d+)', assessment['esi_level'])
+            if esi_match:
+                esi_level = esi_match.group(1)
+        elif assessment.get('esi_evaluation'):
+            esi_match = re.search(r'(\d+)', assessment['esi_evaluation'])
+            if esi_match:
+                esi_level = esi_match.group(1)
+        
+        # Get a rationale or assessment
+        rationale = ""
+        if assessment.get('rationale'):
+            rationale = assessment['rationale'][:100]
+        elif assessment.get('clinical_assessment'):
+            rationale = assessment['clinical_assessment'][:100]
+        elif assessment.get('specialist_impression'):
+            rationale = assessment['specialist_impression'][:100]
+        elif assessment.get('initial_impression'):
+            rationale = assessment['initial_impression'][:100]
+        
+        if esi_level and rationale:
+            return f"ESI Level: {esi_level}. Rationale: {rationale}..."
+        elif esi_level:
+            return f"ESI Level: {esi_level}."
+        elif rationale:
+            return f"Assessment: {rationale}..."
         else:
-            return "No clear ESI recommendation"
+            return "Assessment completed."
     
     def _create_consensus_prompt(self, discussion_history, conversation_text):
         """Create a prompt for the final consensus"""
@@ -156,10 +232,12 @@ class AgentDiscussion:
         prompt.append("Please analyze the discussion and determine:")
         prompt.append("1. The final ESI level (1-5)")
         prompt.append("2. Confidence level (0-100%)")
-        prompt.append("3. Clinical justification for this ESI level")
+        prompt.append("3. Clinical justification for this ESI level that references specific findings from this case")
         prompt.append("4. Recommended immediate actions (provide at least 3-5 specific actions)")
         prompt.append("")
-        prompt.append("IMPORTANT: Your recommended actions must be specific, practical steps that the emergency department staff should take. Do not leave this section empty or vague.")
+        prompt.append("IMPORTANT: Your recommended actions MUST be specific to this patient's condition and presentation.")
+        prompt.append("Do NOT provide generic recommendations like 'establish IV access' or 'monitor vital signs' without specifying WHY and HOW these actions relate to this specific patient.")
+        prompt.append("Each recommendation should include the specific reason for the action based on the patient's symptoms or condition.")
         
         return "\n".join(prompt)
     
@@ -177,15 +255,26 @@ class AgentDiscussion:
         - Level 4: Requires one resource
         - Level 5: Requires no resources
         
-        IMPORTANT: You MUST provide at least 3-5 specific recommended actions for the patient based on their ESI level.
-        These actions should be concrete, practical steps that the emergency department staff should take.
+        IMPORTANT: You MUST provide at least 3-5 SPECIFIC recommended actions for the patient based on their ESI level AND the specific details of their case.
         
-        For ESI Level 1-2 patients, include immediate interventions.
-        For ESI Level 3 patients, include diagnostic and treatment recommendations.
-        For ESI Level 4-5 patients, include appropriate care instructions.
+        DO NOT provide generic recommendations. Each recommendation must be directly related to the patient's specific symptoms, history, and presentation.
         
-        Provide your final determination in a structured format with clear reasoning.
-        Be decisive and consider all perspectives from the discussion.
+        For example:
+        - Instead of "Establish IV access" → "Establish IV access for fluid resuscitation due to signs of dehydration"
+        - Instead of "Order appropriate tests" → "Order CBC, BMP, and urinalysis to evaluate suspected UTI"
+        - Instead of "Administer pain medication" → "Administer acetaminophen 1000mg PO for fever of 101.3°F"
+        
+        For ESI Level 1-2 patients, include immediate interventions specific to their life-threatening condition.
+        For ESI Level 3 patients, include diagnostic and treatment recommendations targeting their specific presentation.
+        For ESI Level 4-5 patients, include appropriate care instructions that address their specific complaint.
+        
+        Your final determination must include:
+        1. ESI Level (1-5)
+        2. Confidence level (0-100%)
+        3. Detailed clinical justification referencing specific findings from the case
+        4. Specific recommended actions (at least 3-5) tailored to this exact patient
+        
+        Be decisive and consider all perspectives from the discussion, but ensure your recommendations are highly specific to this individual patient case.
         """
     
     def _parse_consensus_result(self, result):
@@ -235,49 +324,69 @@ class AgentDiscussion:
                       and "Confidence" not in a
                       and "Justification" not in a
                       and "Recommended Actions" not in a
-                      and len(a) < 150]
+                      and len(a) < 200]  # Allow longer actions for more specificity
         
-        # If still no actions, generate default actions based on ESI level
+        # If still no actions, generate default actions based on ESI level and justification
         if not actions:
+            # Extract key symptoms or conditions from the justification
+            key_symptoms = []
+            if "chest pain" in justification.lower():
+                key_symptoms.append("chest pain")
+            if "shortness of breath" in justification.lower() or "sob" in justification.lower():
+                key_symptoms.append("respiratory distress")
+            if "fever" in justification.lower():
+                key_symptoms.append("fever")
+            if "bleeding" in justification.lower():
+                key_symptoms.append("bleeding")
+            if "trauma" in justification.lower() or "injury" in justification.lower():
+                key_symptoms.append("trauma")
+            if "pain" in justification.lower():
+                key_symptoms.append("pain")
+            
+            # Default symptom if none detected
+            if not key_symptoms:
+                key_symptoms = ["presenting condition"]
+            
+            # Generate more specific actions based on ESI level and symptoms
             if esi_level == "1":
                 actions = [
-                    "Immediate intervention by emergency physician",
-                    "Prepare resuscitation equipment",
-                    "Establish IV access immediately",
-                    "Continuous vital sign monitoring",
-                    "Prepare for possible intubation/resuscitation"
+                    f"Immediate intervention by emergency physician for {' and '.join(key_symptoms)}",
+                    f"Prepare resuscitation equipment appropriate for {' and '.join(key_symptoms)}",
+                    f"Establish two large-bore IV access for immediate medication administration and fluid resuscitation",
+                    "Continuous cardiac monitoring and vital sign checks every 2-3 minutes",
+                    f"Notify critical care team for possible ICU admission due to {' and '.join(key_symptoms)}"
                 ]
             elif esi_level == "2":
                 actions = [
-                    "Urgent assessment by emergency physician within 10 minutes",
-                    "Establish IV access",
-                    "Continuous vital sign monitoring",
-                    "Administer appropriate pain medication if needed",
-                    "Prepare for diagnostic studies"
+                    f"Urgent assessment by emergency physician within 10 minutes to evaluate {' and '.join(key_symptoms)}",
+                    "Establish IV access for medication and fluid administration",
+                    "Continuous vital sign monitoring every 5-10 minutes",
+                    f"Administer appropriate medication for {' and '.join(key_symptoms)} after physician assessment",
+                    f"Order diagnostic studies specific to {' and '.join(key_symptoms)} including labs and imaging"
                 ]
             elif esi_level == "3":
                 actions = [
-                    "Assessment by emergency physician within 30 minutes",
-                    "Obtain baseline vital signs",
-                    "Order appropriate diagnostic tests",
-                    "Establish IV access if needed",
-                    "Reassess patient condition regularly"
+                    f"Assessment by emergency physician within 30 minutes to evaluate {' and '.join(key_symptoms)}",
+                    "Obtain baseline vital signs and repeat every 1-2 hours",
+                    f"Order diagnostic tests appropriate for {' and '.join(key_symptoms)}",
+                    "Establish IV access if needed for medication administration",
+                    f"Provide symptomatic treatment for {' and '.join(key_symptoms)} as ordered"
                 ]
             elif esi_level == "4":
                 actions = [
-                    "Assessment by provider within 60 minutes",
+                    f"Assessment by provider within 60 minutes to evaluate {' and '.join(key_symptoms)}",
                     "Obtain baseline vital signs",
-                    "Focused examination of affected area",
-                    "Consider appropriate imaging or simple tests",
-                    "Provide symptomatic relief as needed"
+                    f"Focused examination of {' and '.join(key_symptoms)}",
+                    f"Consider appropriate testing for {' and '.join(key_symptoms)} if clinically indicated",
+                    f"Provide symptomatic relief for {' and '.join(key_symptoms)} as appropriate"
                 ]
             else:  # ESI level 5
                 actions = [
-                    "Assessment by provider when available",
-                    "Obtain baseline vital signs",
-                    "Focused examination of affected area",
-                    "Provide education and home care instructions",
-                    "Arrange follow-up care as needed"
+                    f"Assessment by provider when available to evaluate {' and '.join(key_symptoms)}",
+                    "Obtain baseline vital signs once",
+                    f"Focused examination of {' and '.join(key_symptoms)}",
+                    f"Provide education on home management of {' and '.join(key_symptoms)}",
+                    "Arrange appropriate follow-up care as needed"
                 ]
         
         return {
@@ -288,19 +397,16 @@ class AgentDiscussion:
         }
     
     def _generate_discussion_summary(self, discussion_history):
-        """Generate a summary of the agent discussion"""
-        summary_prompt = "Summarize the following discussion between medical professionals about a patient's ESI level:\n\n"
+        """Generate a summary of the discussion"""
+        summary = []
         
         for entry in discussion_history:
-            summary_prompt += f"{entry['role']}: {entry['content']}\n\n"
+            # Extract the first sentence or up to 100 characters
+            content = entry["content"]
+            first_sentence = content.split('.')[0] + '.'
+            if len(first_sentence) > 100:
+                first_sentence = first_sentence[:97] + '...'
+            
+            summary.append(f"{entry['role']}: {first_sentence}")
         
-        summary_prompt += "Provide a concise summary of the key points and areas of agreement/disagreement."
-        
-        summary = query_model(
-            model_str=self.model,
-            system_prompt="You are a medical scribe who creates concise summaries of clinical discussions.",
-            prompt=summary_prompt,
-            openai_api_key=self.api_key
-        )
-        
-        return summary 
+        return "\n".join(summary) 

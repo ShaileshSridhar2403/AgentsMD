@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-def generate_quick_reference(case_id, esi_level, confidence, actions, chief_complaint=None):
+def generate_quick_reference(case_id, esi_level, confidence, actions, chief_complaint=None, output_dir="quick_ref"):
     """
     Generate a quick reference file for nurses in action
     
@@ -11,16 +11,17 @@ def generate_quick_reference(case_id, esi_level, confidence, actions, chief_comp
         confidence (int): Confidence in the ESI determination
         actions (list): List of recommended actions
         chief_complaint (str, optional): The patient's chief complaint
+        output_dir (str, optional): Directory to save the quick reference file
         
     Returns:
         str: Path to the generated quick reference file
     """
-    # Create quick_ref directory if it doesn't exist
-    os.makedirs("quick_ref", exist_ok=True)
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
     
     # Format the quick reference
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"quick_ref/{case_id}_{timestamp}_QUICK.txt"
+    filename = f"{output_dir}/{case_id}_{timestamp}_QUICK.txt"
     
     with open(filename, "w") as f:
         f.write("="*40 + "\n")

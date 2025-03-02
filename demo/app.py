@@ -9,6 +9,7 @@ import werkzeug
 import flask
 import shutil
 import threading
+import re
 
 # Add parent directory to path so we can import the AI Triage System
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -90,29 +91,47 @@ def process_case_task(patient_case, api_key):
     try:
         # Reset progress
         progress_updates["current_task"] = "Initializing triage system..."
-        progress_updates["percentage"] = 10
+        progress_updates["percentage"] = 5
         progress_updates["status"] = "pending"
         progress_updates["message"] = "Setting up the AI agents..."
         
+        # Define a progress callback function
+        def update_progress(message, percentage=None):
+            if percentage is not None:
+                progress_updates["percentage"] = percentage
+            progress_updates["message"] = message
+        
         # Initialize the triage system
         triage_system = ClinicalTriageSystem(
-            api_key=api_key,
-            llm_backend="gpt-4o-mini",
+            api_key=api_key,  # Use OpenAI API key
+            llm_backend="o1-mini",  # Use OpenAI o1-mini
             verbose=True
         )
         
-        # Update progress
-        progress_updates["current_task"] = "Analyzing patient case..."
-        progress_updates["percentage"] = 30
-        progress_updates["message"] = "The AI agents are reviewing the conversation..."
+        # Monkey patch the AgentDiscussion.deliberate method to capture progress
+        original_deliberate = triage_system.discussion.deliberate
+        
+        def patched_deliberate(conversation_text, case_id=None):
+            # Update the current task
+            progress_updates["current_task"] = "Agent Discussion"
+            
+            # Call the original method with our progress callback
+            return original_deliberate(
+                conversation_text=conversation_text,
+                case_id=case_id,
+                progress_callback=update_progress
+            )
+        
+        # Replace the method
+        triage_system.discussion.deliberate = patched_deliberate
         
         # Process the conversation
         results = triage_system.process_conversation(patient_case)
         
-        # Update progress
-        progress_updates["current_task"] = "Generating assessment..."
-        progress_updates["percentage"] = 70
-        progress_updates["message"] = "Determining ESI level and recommendations..."
+        # Update progress for file operations
+        progress_updates["current_task"] = "Generating Output"
+        progress_updates["percentage"] = 90
+        progress_updates["message"] = "Creating output files..."
         
         case_id = results["case_id"]
         latest_results["case_id"] = case_id
@@ -121,11 +140,6 @@ def process_case_task(patient_case, api_key):
         os.makedirs("demo/quick_ref", exist_ok=True)
         os.makedirs("demo/results", exist_ok=True)
         os.makedirs("demo/discussions", exist_ok=True)
-        
-        # Update progress
-        progress_updates["current_task"] = "Saving results..."
-        progress_updates["percentage"] = 85
-        progress_updates["message"] = "Preparing output files..."
         
         # Copy quick reference files
         quick_ref_dir = "quick_ref"
@@ -158,7 +172,7 @@ def process_case_task(patient_case, api_key):
         # Update progress
         progress_updates["current_task"] = "Complete"
         progress_updates["percentage"] = 100
-        progress_updates["message"] = "Triage assessment complete!"
+        progress_updates["message"] = f"Triage assessment complete! ESI Level: {results['esi_level']}"
         progress_updates["status"] = "complete"
         
     except Exception as e:
@@ -177,11 +191,11 @@ def process_case():
     if not patient_case:
         return jsonify({"error": "No patient case provided"}), 400
     
-    # Get API key from environment
+    # Get API key from environment - use OpenAI API key
     api_key = os.getenv('OPENAI_API_KEY')
     
     if not api_key:
-        return jsonify({"error": "No API key found in environment. Please set OPENAI_API_KEY in .env file."}), 400
+        return jsonify({"error": "No OpenAI API key found in environment. Please set OPENAI_API_KEY in .env file."}), 400
     
     # Start processing in a background thread
     thread = threading.Thread(target=process_case_task, args=(patient_case, api_key))
@@ -197,14 +211,20 @@ def check_status():
     if progress_updates["status"] == "complete":
         # Read the quick reference file for immediate display
         quick_ref_content = ""
+        esi_level = None
         if latest_results["quick_ref_file"] and os.path.exists(latest_results["quick_ref_file"]):
             with open(latest_results["quick_ref_file"], 'r') as f:
                 quick_ref_content = f.read()
+                # Extract ESI level from the content
+                esi_match = re.search(r'ESI LEVEL: (\d)', quick_ref_content)
+                if esi_match:
+                    esi_level = esi_match.group(1)
         
         return jsonify({
             "status": "complete",
             "case_id": latest_results["case_id"],
             "quick_ref": quick_ref_content,
+            "esi_level": esi_level,
             "has_detailed_output": latest_results["detailed_output_file"] is not None,
             "has_discussion": latest_results["discussion_file"] is not None
         })

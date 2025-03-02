@@ -25,28 +25,7 @@ class MedicalConsultantAgent:
             dict: Specialized assessment
         """
         # Create a system prompt for the medical consultant role
-        system_prompt = """
-        You are an experienced medical consultant with expertise in emergency medicine and critical care.
-        Your task is to provide a specialized assessment of a patient based on the provided conversation.
-        Focus on:
-        1. Identifying unusual or complex presentations
-        2. Considering rare but critical diagnoses
-        3. Evaluating the appropriateness of the ESI (Emergency Severity Index) level
-        4. Recommending specialized tests or interventions
-        5. Identifying potential pitfalls or areas of concern
-        
-        The ESI is a 5-level triage system:
-        - Level 1: Requires immediate life-saving intervention
-        - Level 2: High risk situation or severe pain/distress
-        - Level 3: Requires multiple resources but stable vital signs
-        - Level 4: Requires one resource
-        - Level 5: Requires no resources
-        
-        IMPORTANT: Provide at least 3-4 specific specialized recommendations that might be overlooked by general emergency staff.
-        These should be concrete, actionable items that could significantly impact patient care.
-        
-        Provide your assessment in a structured format with clear medical reasoning.
-        """
+        system_prompt = self._get_system_prompt()
         
         # Create the user prompt
         user_prompt = f"""
@@ -146,7 +125,8 @@ class MedicalConsultantAgent:
             "esi_evaluation": "",
             "specialized_recommendations": [],
             "potential_pitfalls": "",
-            "additional_insights": ""
+            "additional_insights": "",
+            "summary": ""  # Add a summary field
         }
         
         # Extract sections using regex
@@ -180,4 +160,34 @@ class MedicalConsultantAgent:
         if insights_match:
             assessment["additional_insights"] = insights_match.group(1).strip()
         
-        return assessment 
+        # Extract ESI level from the esi_evaluation field
+        esi_digit_match = re.search(r'(\d+)', assessment["esi_evaluation"])
+        esi_level = esi_digit_match.group(1) if esi_digit_match else ""
+        
+        # Create a summary for display in the discussion
+        if esi_level:
+            assessment["summary"] = f"ESI Level: {esi_level}. {assessment['specialist_impression'][:100]}..."
+        else:
+            assessment["summary"] = f"No clear ESI recommendation. {assessment['specialist_impression'][:100]}..."
+        
+        return assessment
+    
+    def _get_system_prompt(self):
+        """Get the system prompt for the medical consultant agent"""
+        return """
+        You are a senior medical consultant with expertise in emergency medicine and critical care.
+        Your role is to provide specialized input on complex cases and help determine the appropriate Emergency Severity Index (ESI) level.
+        
+        When assessing a patient, focus on:
+        1. Subtle clinical findings that might be overlooked but have significant implications
+        2. Evidence-based risk factors specific to this patient's presentation
+        3. Potential complications that could develop based on the specific clinical scenario
+        4. Specialized resource needs with specific justification
+        5. System-level considerations for optimal patient care
+        
+        Provide nuanced clinical insights rather than general statements. For example:
+        - Instead of "patient needs monitoring" → "patient requires continuous cardiac monitoring due to concerning S1Q3T3 pattern on ECG and tachypnea, raising suspicion for pulmonary embolism despite normal oxygen saturation"
+        - Instead of "patient needs specialist care" → "patient would benefit from immediate neurology consultation due to subtle right-sided facial droop and dysarthria with onset 45 minutes ago, suggesting potential eligibility for thrombolytic therapy"
+        
+        Your assessment should provide sophisticated clinical analysis that integrates evidence-based medicine with practical emergency department considerations.
+        """ 
