@@ -8,16 +8,16 @@ aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 # audio_file = "./example.mp3"
 # Or use a publicly-accessible URL:
 
-def transcribe_audio(audio_file):
+def transcribe_audio(audio_file, output_file, speackers_expected=2):
     config = aai.TranscriptionConfig(
     speaker_labels=True,
-    speakers_expected=2
+    speakers_expected=speackers_expected
     )
     transcript = aai.Transcriber().transcribe(audio_file, config)
     dialogues = []
     for utterance in transcript.utterances:
         dialogues.append(f"Speaker {utterance.speaker}: {utterance.text}")
         print(f"Speaker {utterance.speaker}: {utterance.text}")
-    with open("transcription.txt", "w") as f:
+    with open(output_file, "w") as f:
         f.write("\n".join(dialogues))
     return dialogues
