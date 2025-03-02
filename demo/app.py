@@ -10,6 +10,7 @@ import flask
 import shutil
 import threading
 import re
+import pdb
 
 # Add parent directory to path so we can import the AI Triage System
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -186,7 +187,9 @@ def process_case_task(patient_case, api_key):
 def process_case():
     """Process a patient case"""
     # Get the patient case text from the form
-    patient_case = request.form.get('patient_case', '')
+    print(request.form)
+    # pdb.set_trace()
+    patient_case = request.form.get('conversation_text', '')
     
     if not patient_case:
         return jsonify({"error": "No patient case provided"}), 400
