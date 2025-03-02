@@ -3,6 +3,8 @@ import json
 import os
 from utils.query_model import query_model
 from utils.esi_examples import load_esi_examples, format_examples_for_prompt
+from utils.schema import TriageAssessment
+from utils.structured_parser import parse_structured_output
 
 class TriageNurseAgent:
     def __init__(self, model="gpt-4o-mini", api_key=None):
@@ -56,7 +58,7 @@ class TriageNurseAgent:
         )
         
         # Parse the response
-        assessment = self._parse_assessment(response)
+        assessment = parse_structured_output(response, TriageAssessment)
         
         return assessment
     
