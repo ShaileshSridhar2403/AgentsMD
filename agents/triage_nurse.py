@@ -2,6 +2,7 @@ import re
 import json
 import os
 from utils.query_model import query_model
+from utils.esi_examples import load_esi_examples, format_examples_for_prompt
 
 class TriageNurseAgent:
     def __init__(self, model="gpt-4o-mini", api_key=None):
@@ -180,7 +181,13 @@ class TriageNurseAgent:
     
     def _get_system_prompt(self):
         """Get the system prompt for the triage nurse agent"""
-        return """
+        # Load ESI examples - one per level
+        esi_examples = load_esi_examples(num_per_level=1)
+        
+        # Format examples for triage nurse
+        examples_text = format_examples_for_prompt(esi_examples, agent_type="nurse")
+        
+        base_prompt = """
         You are an experienced emergency department triage nurse with over 15 years of experience.
         Your role is to perform the initial assessment of patients and determine their Emergency Severity Index (ESI) level.
         
@@ -196,4 +203,17 @@ class TriageNurseAgent:
         - Instead of "abnormal vital signs" → "tachycardic with HR 112, hypertensive at 162/94, afebrile at 98.6°F"
         
         Your assessment should be thorough and focused on objective clinical findings that impact ESI determination.
-        """ 
+        
+        EMERGENCY SEVERITY INDEX (ESI) REFERENCE:
+        - ESI Level 1: Requires immediate life-saving intervention
+        - ESI Level 2: High-risk situation, severe pain/distress, or vital sign abnormalities
+        - ESI Level 3: Requires multiple resources but stable vital signs
+        - ESI Level 4: Requires one resource
+        - ESI Level 5: Requires no resources
+        
+        REFERENCE EXAMPLES:
+        
+        {examples}
+        """
+        
+        return base_prompt.format(examples=examples_text) 

@@ -1,5 +1,6 @@
 import re
 from utils.query_model import query_model
+from utils.esi_examples import load_esi_examples, format_examples_for_prompt
 
 class MedicalConsultantAgent:
     def __init__(self, model="gpt-4o-mini", api_key=None):
@@ -174,7 +175,13 @@ class MedicalConsultantAgent:
     
     def _get_system_prompt(self):
         """Get the system prompt for the medical consultant agent"""
-        return """
+        # Load ESI examples - one per level
+        esi_examples = load_esi_examples(num_per_level=1)
+        
+        # Format examples for medical consultant
+        examples_text = format_examples_for_prompt(esi_examples, agent_type="consultant")
+        
+        base_prompt = """
         You are a senior medical consultant with expertise in emergency medicine and critical care.
         Your role is to provide specialized input on complex cases and help determine the appropriate Emergency Severity Index (ESI) level.
         
@@ -190,4 +197,17 @@ class MedicalConsultantAgent:
         - Instead of "patient needs specialist care" → "patient would benefit from immediate neurology consultation due to subtle right-sided facial droop and dysarthria with onset 45 minutes ago, suggesting potential eligibility for thrombolytic therapy"
         
         Your assessment should provide sophisticated clinical analysis that integrates evidence-based medicine with practical emergency department considerations.
-        """ 
+        
+        EMERGENCY SEVERITY INDEX (ESI) REFERENCE:
+        - ESI Level 1: Requires immediate life-saving intervention
+        - ESI Level 2: High-risk situation, severe pain/distress, or vital sign abnormalities
+        - ESI Level 3: Requires multiple resources but stable vital signs
+        - ESI Level 4: Requires one resource
+        - ESI Level 5: Requires no resources
+        
+        REFERENCE EXAMPLES:
+        
+        {examples}
+        """
+        
+        return base_prompt.format(examples=examples_text) 

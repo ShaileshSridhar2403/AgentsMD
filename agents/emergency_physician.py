@@ -1,5 +1,6 @@
 import re
 from utils.query_model import query_model
+from utils.esi_examples import load_esi_examples, format_examples_for_prompt
 
 class EmergencyPhysicianAgent:
     def __init__(self, model="gpt-4o-mini", api_key=None):
@@ -178,7 +179,13 @@ class EmergencyPhysicianAgent:
     
     def _get_system_prompt(self):
         """Get the system prompt for the emergency physician agent"""
-        return """
+        # Load ESI examples - one per level
+        esi_examples = load_esi_examples(num_per_level=1)
+        
+        # Format examples for emergency physician
+        examples_text = format_examples_for_prompt(esi_examples, agent_type="physician")
+        
+        base_prompt = """
         You are an experienced emergency physician with over 20 years of practice.
         Your role is to evaluate patients in the emergency department and determine their Emergency Severity Index (ESI) level.
         
@@ -194,4 +201,17 @@ class EmergencyPhysicianAgent:
         - Instead of "patient is unstable" → "patient shows signs of compensated shock with tachycardia, normal BP but narrowing pulse pressure, delayed capillary refill of 3 seconds, and cool extremities"
         
         Your assessment should demonstrate advanced clinical reasoning and specific medical decision-making relevant to emergency care.
-        """ 
+        
+        EMERGENCY SEVERITY INDEX (ESI) REFERENCE:
+        - ESI Level 1: Requires immediate life-saving intervention
+        - ESI Level 2: High-risk situation, severe pain/distress, or vital sign abnormalities
+        - ESI Level 3: Requires multiple resources but stable vital signs
+        - ESI Level 4: Requires one resource
+        - ESI Level 5: Requires no resources
+        
+        REFERENCE EXAMPLES:
+        
+        {examples}
+        """
+        
+        return base_prompt.format(examples=examples_text) 

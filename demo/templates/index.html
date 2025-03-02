@@ -300,18 +300,20 @@
         <div class="form-container">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-user-md me-2"></i>Patient Case Input</h5>
+                    <h5 class="mb-0">Enter patient-nurse conversation, patient notes, or clinical data:</h5>
                 </div>
                 <div class="card-body">
                     <form id="triage-form">
-                        <div class="mb-3">
-                            <label for="patient-case" class="form-label">Enter patient-nurse conversation:</label>
-                            <textarea class="form-control" id="patient-case" name="patient_case" rows="10" required placeholder="Paste the conversation between the nurse and patient here..."></textarea>
+                        <div class="form-group mb-3">
+                            <label for="conversation-text" class="form-label">Patient information:</label>
+                            <textarea class="form-control" id="conversation-text" name="conversation_text" rows="10" placeholder="Enter patient conversation, clinical notes, vital signs, or other relevant information here..." required></textarea>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-stethoscope me-2"></i>Process Case
-                        </button>
+                        <div class="form-group mb-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-stethoscope me-2"></i>Analyze Case
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

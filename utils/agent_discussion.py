@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 from utils.query_model import query_model
+from utils.esi_examples import load_esi_examples, format_examples_for_prompt
 
 class AgentDiscussion:
     def __init__(self, agents, model="gpt-4o-mini", api_key=None, max_rounds=3):
@@ -175,11 +176,13 @@ class AgentDiscussion:
     def _summarize_assessment(self, assessment):
         """Create a summary of an agent's assessment"""
         # If the assessment already has a summary, use it
-        if assessment.get('summary'):
+        if assessment.get('summary') and 'ESI Level' in assessment.get('summary'):
             return assessment['summary']
         
         # Otherwise, try to create a summary based on available fields
         esi_level = ""
+        
+        # Try multiple ways to extract ESI level
         if assessment.get('recommended_esi'):
             esi_match = re.search(r'(\d+)', assessment['recommended_esi'])
             if esi_match:
@@ -193,6 +196,14 @@ class AgentDiscussion:
             if esi_match:
                 esi_level = esi_match.group(1)
         
+        # If we still don't have an ESI level, search through all fields
+        if not esi_level:
+            for key, value in assessment.items():
+                if isinstance(value, str) and ('ESI' in value or 'esi' in value.lower()) and re.search(r'(\d+)', value):
+                    esi_match = re.search(r'(\d+)', value)
+                    esi_level = esi_match.group(1)
+                    break
+        
         # Get a rationale or assessment
         rationale = ""
         if assessment.get('rationale'):
@@ -204,14 +215,48 @@ class AgentDiscussion:
         elif assessment.get('initial_impression'):
             rationale = assessment['initial_impression'][:100]
         
+        # If we still don't have a rationale, use any non-empty string field
+        if not rationale:
+            for key, value in assessment.items():
+                if isinstance(value, str) and len(value) > 10 and key not in ['summary', 'recommended_esi', 'esi_level', 'esi_evaluation']:
+                    rationale = value[:100]
+                    break
+        
+        # If we still don't have an ESI level, try to extract it from the rationale
+        if not esi_level and rationale:
+            esi_match = re.search(r'ESI\s*(?:level)?\s*(\d+)', rationale, re.IGNORECASE)
+            if esi_match:
+                esi_level = esi_match.group(1)
+        
+        # Create a default ESI level if we still don't have one
+        if not esi_level:
+            # Look for keywords in the assessment that might indicate severity
+            severity_indicators = {
+                "1": ["immediate", "life-saving", "critical", "unstable", "unresponsive", "cardiac arrest", "respiratory arrest"],
+                "2": ["high risk", "severe pain", "severe distress", "abnormal vital signs", "altered mental status"],
+                "3": ["multiple resources", "stable vital signs", "moderate symptoms"],
+                "4": ["one resource", "minor", "simple"],
+                "5": ["no resources", "minimal", "routine"]
+            }
+            
+            # Convert assessment to a single string for keyword searching
+            assessment_text = " ".join([str(v) for v in assessment.values() if isinstance(v, (str, list))])
+            assessment_text = assessment_text.lower()
+            
+            # Check for severity indicators
+            for level, indicators in severity_indicators.items():
+                if any(indicator in assessment_text for indicator in indicators):
+                    esi_level = level
+                    break
+        
         if esi_level and rationale:
             return f"ESI Level: {esi_level}. Rationale: {rationale}..."
         elif esi_level:
-            return f"ESI Level: {esi_level}."
+            return f"ESI Level: {esi_level}. No detailed rationale provided."
         elif rationale:
-            return f"Assessment: {rationale}..."
+            return f"No ESI level specified. Assessment: {rationale}..."
         else:
-            return "Assessment completed."
+            return "Assessment completed but no ESI level or rationale found."
     
     def _create_consensus_prompt(self, discussion_history, conversation_text):
         """Create a prompt for the final consensus"""
@@ -243,38 +288,40 @@ class AgentDiscussion:
     
     def _get_consensus_system_prompt(self):
         """Get the system prompt for the consensus model"""
-        return """
-        You are an experienced emergency department medical director with over 25 years of experience.
-        Your role is to review discussions between medical professionals and make the final determination
-        on Emergency Severity Index (ESI) levels for patients.
+        # Load ESI examples - one per level
+        esi_examples = load_esi_examples(num_per_level=1)
         
-        The ESI is a 5-level triage system:
-        - Level 1: Requires immediate life-saving intervention
-        - Level 2: High risk situation or severe pain/distress
-        - Level 3: Requires multiple resources but stable vital signs
-        - Level 4: Requires one resource
-        - Level 5: Requires no resources
+        # Format examples for consensus
+        examples_text = format_examples_for_prompt(esi_examples, agent_type="consensus")
         
-        IMPORTANT: You MUST provide at least 3-5 SPECIFIC recommended actions for the patient based on their ESI level AND the specific details of their case.
+        return f"""
+        You are an expert emergency medicine triage system that integrates the assessments of multiple medical professionals.
+        Your task is to determine the final Emergency Severity Index (ESI) level for a patient based on the discussion among a triage nurse, emergency physician, and medical consultant.
         
-        DO NOT provide generic recommendations. Each recommendation must be directly related to the patient's specific symptoms, history, and presentation.
+        The Emergency Severity Index (ESI) is a five-level triage algorithm that categorizes patients by both acuity and resource needs:
+        - ESI Level 1: Requires immediate life-saving intervention
+        - ESI Level 2: High-risk situation, severe pain/distress, or vital sign abnormalities
+        - ESI Level 3: Requires multiple resources but stable vital signs
+        - ESI Level 4: Requires one resource
+        - ESI Level 5: Requires no resources
         
-        For example:
-        - Instead of "Establish IV access" → "Establish IV access for fluid resuscitation due to signs of dehydration"
-        - Instead of "Order appropriate tests" → "Order CBC, BMP, and urinalysis to evaluate suspected UTI"
-        - Instead of "Administer pain medication" → "Administer acetaminophen 1000mg PO for fever of 101.3°F"
+        When determining the final ESI level:
+        1. Consider all perspectives from the discussion
+        2. Prioritize patient safety above all else
+        3. Weigh clinical findings, vital signs, and risk factors
+        4. Consider resource needs based on the patient's presentation
+        5. Provide clear clinical justification for your decision
         
-        For ESI Level 1-2 patients, include immediate interventions specific to their life-threatening condition.
-        For ESI Level 3 patients, include diagnostic and treatment recommendations targeting their specific presentation.
-        For ESI Level 4-5 patients, include appropriate care instructions that address their specific complaint.
+        REFERENCE EXAMPLES:
         
-        Your final determination must include:
-        1. ESI Level (1-5)
-        2. Confidence level (0-100%)
-        3. Detailed clinical justification referencing specific findings from the case
-        4. Specific recommended actions (at least 3-5) tailored to this exact patient
+        {examples_text}
         
-        Be decisive and consider all perspectives from the discussion, but ensure your recommendations are highly specific to this individual patient case.
+        Your output must follow this exact format:
+        
+        ESI Level: [1-5]
+        Confidence: [0-100]%
+        Clinical Justification: [Detailed explanation of why this ESI level is appropriate]
+        Recommended Immediate Actions: [List of specific actions that should be taken]
         """
     
     def _parse_consensus_result(self, result):
