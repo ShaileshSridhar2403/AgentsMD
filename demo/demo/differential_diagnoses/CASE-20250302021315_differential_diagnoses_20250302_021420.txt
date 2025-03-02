@@ -1,0 +1,114 @@
+
+DIFFERENTIAL DIAGNOSES
+=====================
+Case ID: CASE-20250302021315
+Generated: 20250302_021420
+
+### Differential Diagnoses for Acute Headache (ESI Level 2)
+
+1. **Subarachnoid Hemorrhage (SAH)**
+   - **Supporting Findings:**
+     - Acute, severe "thunderclap" headache
+     - Sudden onset, often described as the "worst headache of life"
+     - Possible neck stiffness, photophobia, or loss of consciousness
+   - **Additional Tests:**
+     - **Non-contrast CT scan of the head:** High sensitivity within the first 6 hours of symptom onset.
+     - **Lumbar puncture:** If CT is negative and suspicion remains high, to detect xanthochromia.
+
+2. **Meningitis**
+   - **Supporting Findings:**
+     - Severe headache with possible neck stiffness
+     - Fever, photophobia, altered mental status
+     - Recent history of infection or exposure
+   - **Additional Tests:**
+     - **Lumbar puncture:** To analyze cerebrospinal fluid (CSF) for infection markers.
+     - **Blood cultures:** To identify causative organisms.
+     - **CT scan of the head:** If signs of increased intracranial pressure or focal neurological deficits are present before lumbar puncture.
+
+3. **Intracerebral Hemorrhage**
+   - **Supporting Findings:**
+     - Acute onset headache, possibly with focal neurological deficits (e.g., weakness, speech difficulties)
+     - Sudden neurological deterioration
+     - History of hypertension or anticoagulant use
+   - **Additional Tests:**
+     - **Non-contrast CT scan of the head:** Rapid identification of hemorrhage.
+     - **MRI of the brain:** If CT is inconclusive and clinical suspicion remains.
+
+4. **Cerebral Venous Sinus Thrombosis**
+   - **Supporting Findings:**
+     - Severe headache, often worse in the morning or with changes in posture
+     - Possible seizures, focal neurological deficits, or signs of increased intracranial pressure
+     - Risk factors: hypercoagulable states, infection, dehydration
+   - **Additional Tests:**
+     - **MR Venography or CT Venography:** To visualize venous sinuses.
+     - **MRI of the brain:** To assess for thrombus and associated brain changes.
+
+5. **Acute Hypertensive Emergency**
+   - **Supporting Findings:**
+     - Severe headache with extremely elevated blood pressure
+     - Possible end-organ damage signs (e.g., hypertensive encephalopathy, retinal hemorrhages)
+     - History of chronic hypertension
+   - **Additional Tests:**
+     - **Blood pressure measurement:** Repeated and accurate assessment.
+     - **ECG and blood tests:** To evaluate for cardiac, renal, or other organ involvement.
+     - **Brain imaging (CT/MRI):** If neurological symptoms are present.
+
+6. **Migraine Headache**
+   - **Supporting Findings:**
+     - Moderate to severe headache, often unilateral, pulsating in nature
+     - Associated symptoms: nausea, vomiting, photophobia, phonophobia
+     - History of similar headaches
+   - **Additional Tests:**
+     - **Clinical evaluation:** Diagnosis is primarily clinical based on history and symptomatology.
+     - **Neuroimaging:** If atypical features or red flags are present to rule out secondary causes.
+
+7. **Tension-Type Headache**
+   - **Supporting Findings:**
+     - Dull, aching head pain, bilateral
+     - Tightness or pressure around the forehead or back of the head and neck
+     - Lack of associated neurological symptoms
+   - **Additional Tests:**
+     - **Clinical evaluation:** Based on history and physical examination.
+     - **Neuroimaging:** Not typically required unless red flags are present.
+
+8. **Temporal (Giant Cell) Arteritis**
+   - **Supporting Findings:**
+     - New-onset headache in older adults (typically >50 years)
+     - Scalp tenderness, jaw claudication, visual disturbances
+     - Elevated inflammatory markers (e.g., ESR, CRP)
+   - **Additional Tests:**
+     - **Temporal artery biopsy:** Gold standard for diagnosis.
+     - **Ultrasound of temporal arteries:** May show characteristic findings.
+     - **Blood tests:** Elevated ESR and CRP.
+
+9. **Sinusitis**
+   - **Supporting Findings:**
+     - Headache localized to sinus areas (frontal, maxillary)
+     - Congestion, facial pain, purulent nasal discharge
+     - Worsening of headache with bending forward
+   - **Additional Tests:**
+     - **Clinical evaluation:** Based on history and physical examination.
+     - **Sinus imaging (CT scan of sinuses):** If complications are suspected.
+
+10. **Primary Intracranial Tumor**
+    - **Supporting Findings:**
+      - Progressive headache, worse in the morning or with Valsalva maneuvers
+      - Focal neurological deficits, seizures, altered mental status
+      - History of malignancy or risk factors for brain tumors
+    - **Additional Tests:**
+      - **MRI of the brain:** Detailed imaging to identify masses.
+      - **CT scan of the head:** If MRI is not immediately available.
+
+### Must-Not-Miss Diagnoses
+- **Subarachnoid Hemorrhage**
+- **Meningitis**
+- **Intracerebral Hemorrhage**
+- **Cerebral Venous Sinus Thrombosis**
+- **Acute Hypertensive Emergency**
+
+These conditions require immediate diagnosis and management due to their potential life-threatening nature.
+
+### Recommended Immediate Actions
+- **Obtain a detailed history and perform a thorough physical and neurological examination** to identify red flags (e.g., sudden onset, neurological deficits, signs of infection).
+- **Initiate appropriate imaging and laboratory tests promptly** based on the leading differential diagnoses.
+- **Stabilize the patient** by establishing IV access, monitoring vital signs continuously, and managing pain or other acute symptoms as needed.

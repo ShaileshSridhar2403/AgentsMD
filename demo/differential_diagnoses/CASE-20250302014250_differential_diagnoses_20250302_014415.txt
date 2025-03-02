@@ -1,0 +1,93 @@
+
+DIFFERENTIAL DIAGNOSES
+=====================
+Case ID: CASE-20250302014250
+Generated: 20250302_014415
+
+### Differential Diagnosis for Severe "Splitting" Headache
+
+1. **Subarachnoid Hemorrhage (SAH)**
+   - **Supporting Findings:**
+     - Sudden onset of severe, "thunderclap" or "splitting" headache.
+     - Potential absence of identifiable stressors despite current stressors.
+   - **Additional Tests:**
+     - **Non-contrast CT Scan of the Head:** High sensitivity within the first 6 hours of symptom onset.
+     - **Lumbar Puncture:** If CT is negative and suspicion remains high, to detect xanthochromia.
+
+2. **Intracranial Mass Lesion (e.g., Brain Tumor)**
+   - **Supporting Findings:**
+     - Progressive headache pattern, possibly worse in the morning or with Valsalva maneuvers.
+     - Focal neurological deficits (if present, though not specified in assessment).
+   - **Additional Tests:**
+     - **Contrast-Enhanced MRI of the Brain:** To identify mass lesions and assess surrounding structures.
+     - **CT Scan with Contrast:** If MRI is contraindicated.
+
+3. **Cerebral Venous Sinus Thrombosis**
+   - **Supporting Findings:**
+     - Severe headache often accompanied by signs of increased intracranial pressure.
+     - Possible risk factors such as recent infection, dehydration, or hypercoagulable states.
+   - **Additional Tests:**
+     - **MR Venography or CT Venography:** To visualize venous sinuses and detect thrombosis.
+     - **D-dimer Levels:** May support diagnosis if elevated, though not specific.
+
+4. **Meningitis or Encephalitis**
+   - **Supporting Findings:**
+     - Severe headache may be accompanied by neck stiffness, fever, photophobia, or altered mental status (not specified but must consider).
+   - **Additional Tests:**
+     - **Lumbar Puncture:** To analyze cerebrospinal fluid (CSF) for infectious agents.
+     - **CT Scan of the Head:** If signs of increased intracranial pressure or focal deficits are present before lumbar puncture.
+
+5. **Pituitary Apoplexy**
+   - **Supporting Findings:**
+     - Sudden severe headache, often with visual disturbances or ophthalmoplegia.
+     - History of known pituitary adenoma (if available).
+   - **Additional Tests:**
+     - **MRI of the Brain with Focus on the Pituitary Gland:** To detect hemorrhage or infarction within the pituitary.
+     - **Endocrine Function Tests:** To assess hormonal deficiencies.
+
+6. **Reversible Cerebral Vasoconstriction Syndrome (RCVS)**
+   - **Supporting Findings:**
+     - Acute, severe headache with possible history of triggers such as exertion or vasoactive substances.
+     - Recurrent headaches over days to weeks.
+   - **Additional Tests:**
+     - **CT Angiography or MR Angiography:** To identify segmental vasoconstriction of cerebral arteries.
+     - **Lumbar Puncture:** To rule out SAH if imaging is inconclusive.
+
+7. **Acute Hypertensive Crisis**
+   - **Supporting Findings:**
+     - Extremely high blood pressure readings (if present, not specified in assessment).
+     - Headache accompanied by other symptoms like blurred vision or chest pain.
+   - **Additional Tests:**
+     - **Blood Pressure Measurement:** Repeated and accurate assessment.
+     - **Fundoscopic Exam:** To check for hypertensive retinopathy.
+     - **ECG and Blood Work:** To assess end-organ damage.
+
+8. **Temporal Arteritis (Giant Cell Arteritis)**
+   - **Supporting Findings:**
+     - Severe headache in older adults, possibly with jaw claudication or visual changes.
+     - Elevated inflammatory markers (if present, not specified).
+   - **Additional Tests:**
+     - **Erythrocyte Sedimentation Rate (ESR) and C-Reactive Protein (CRP):** Elevated in most cases.
+     - **Temporal Artery Biopsy:** Gold standard for diagnosis.
+
+9. **Trigeminal Neuralgia**
+   - **Supporting Findings:**
+     - Intense, stabbing pain typically localized to the distribution of the trigeminal nerve.
+     - Triggered by touch or movement (less likely to present as "splitting" headache).
+   - **Additional Tests:**
+     - **MRI of the Brain with Focus on Cranial Nerves:** To identify possible vascular compression or other lesions.
+     - **Neurological Examination:** To assess sensory deficits.
+
+10. **Primary Headache Disorders (Migraine, Tension-Type Headache)**
+    - **Supporting Findings:**
+      - History of similar headaches triggered by stressors such as low sleep or hackathon pressure.
+      - Absence of red flag symptoms like focal neurological deficits or altered consciousness.
+    - **Additional Tests:**
+      - **Clinical Evaluation:** Detailed headache history to differentiate based on characteristics.
+      - **Neuroimaging:** Generally not required unless "red flags" are present.
+
+### Recommended Immediate Actions
+- **Rapid Diagnostic Imaging:** Perform a non-contrast CT scan of the head urgently to rule out subarachnoid hemorrhage and other intracranial pathologies.
+- **Comprehensive Neurological Assessment:** Evaluate for any focal neurological signs or signs of increased intracranial pressure.
+- **Laboratory Tests:** Depending on findings, consider blood tests such as CBC, electrolytes, and inflammatory markers.
+- **Consult Neurosurgery/Neurology:** If SAH or another critical condition is suspected based on initial tests.

@@ -1,0 +1,99 @@
+
+DIFFERENTIAL DIAGNOSES
+=====================
+Case ID: CASE-20250302014835
+Generated: 20250302_015004
+
+**Differential Diagnoses**
+
+1. **Hypoglycemia**
+   - **Supporting Findings:**
+     - Splitting, severe headache
+     - Autonomic symptoms: hunger, stomachache
+     - Rapid onset of neuroglycopenic and autonomic manifestations
+   - **Additional Tests:**
+     - **Blood Glucose Level:** Immediate fingerstick or venous glucose measurement
+     - **Electrolytes and Metabolic Panel:** To assess for underlying causes and complications
+     - **Electrocardiogram (ECG):** If cardiac symptoms are present or to evaluate for arrhythmias related to hypoglycemia
+
+2. **Migraine Headache**
+   - **Supporting Findings:**
+     - Severe, throbbing (splitting) headache
+     - Possible associated nausea or abdominal discomfort
+   - **Additional Tests:**
+     - **Neurological Examination:** To assess for focal deficits or signs of increased intracranial pressure
+     - **Head CT or MRI:** If atypical features are present or to rule out other intracranial pathologies
+
+3. **Subarachnoid Hemorrhage (SAH)**
+   - **Supporting Findings:**
+     - Sudden-onset, severe (thunderclap) headache, often described as "the worst headache of my life"
+     - Possible neck stiffness, photophobia
+   - **Additional Tests:**
+     - **Non-Contrast Head CT:** Immediate imaging to detect hemorrhage
+     - **Lumbar Puncture:** If CT is inconclusive and suspicion remains high
+
+4. **Diabetic Ketoacidosis (DKA)**
+   - **Supporting Findings:**
+     - Hunger and abdominal discomfort
+     - Possible headache due to dehydration or electrolyte imbalance
+     - History of diabetes or insulin use (if available)
+   - **Additional Tests:**
+     - **Blood Glucose Level:** Elevated in DKA
+     - **Ketones (Blood or Urine):** To confirm ketosis
+     - **Arterial Blood Gas (ABG):** To assess for metabolic acidosis
+
+5. **Acute Pancreatitis**
+   - **Supporting Findings:**
+     - Abdominal pain
+     - Possible nausea and vomiting
+     - Severe headache could be related to electrolyte imbalances or systemic inflammation
+   - **Additional Tests:**
+     - **Serum Amylase and Lipase:** Elevated levels confirm pancreatitis
+     - **Abdominal Ultrasound or CT Scan:** To assess pancreatic inflammation and rule out gallstones
+
+6. **Sepsis**
+   - **Supporting Findings:**
+     - Abdominal pain and possible systemic symptoms like headache
+     - If accompanied by fever, tachycardia, hypotension
+   - **Additional Tests:**
+     - **Complete Blood Count (CBC):** To check for leukocytosis or left shift
+     - **Blood Cultures:** If infection is suspected
+     - **Lactate Levels:** Elevated in septic patients
+     - **Broad Spectrum Antibiotics Initiation:** If sepsis is strongly suspected
+
+7. **Gastrointestinal Obstruction**
+   - **Supporting Findings:**
+     - Abdominal pain and discomfort
+     - Potential for associated symptoms like nausea and vomiting
+   - **Additional Tests:**
+     - **Abdominal X-Ray:** To identify air-fluid levels
+     - **CT Abdomen and Pelvis:** For detailed imaging of obstruction
+     - **Electrolytes:** To assess for electrolyte imbalances due to vomiting or reduced intake
+
+8. **Carbon Monoxide Poisoning**
+   - **Supporting Findings:**
+     - Headache, which can be severe
+     - Abdominal symptoms may occur due to systemic hypoxia
+     - History of exposure to combustion sources
+   - **Additional Tests:**
+     - **Carboxyhemoglobin Levels:** Measurement via co-oximetry
+     - **Pulse Oximetry:** To check for decreased oxygen saturation, though it may be falsely normal
+
+9. **Hypertensive Emergency**
+   - **Supporting Findings:**
+     - Severe headache can be a symptom of hypertensive crisis
+     - Possible end-organ damage signs (e.g., neurological deficits)
+   - **Additional Tests:**
+     - **Blood Pressure Measurement:** Immediate and repeated measurements
+     - **Neurological Examination:** To assess for strokes or encephalopathy
+     - **Fundoscopic Exam:** To check for hypertensive retinopathy
+
+10. **Intracranial Mass or Tumor**
+    - **Supporting Findings:**
+      - Chronic or progressive headaches
+      - Associated symptoms based on mass effect, such as nausea or vomiting
+    - **Additional Tests:**
+      - **Head MRI:** Detailed imaging to identify mass lesions
+      - **Neurological Examination:** To detect focal deficits
+
+**Note:** While hypoglycemia appears to be the most likely diagnosis given the presenting symptoms and ESI Level 2 prioritization, it is crucial to rapidly rule out life-threatening conditions such as subarachnoid hemorrhage and diabetic ketoacidosis. Immediate blood glucose measurement is essential and should be performed concurrently with other critical assessments.
