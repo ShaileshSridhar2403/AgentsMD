@@ -13,13 +13,13 @@ from agents.medical_consultant import MedicalConsultantAgent
 from utils.agent_discussion import AgentDiscussion
 
 class ClinicalTriageSystem:
-    def __init__(self, api_key=None, llm_backend="claude-3-opus-20240229", verbose=False):
+    def __init__(self, api_key=None, llm_backend="o1-mini", verbose=False):
         """
         Initialize the Clinical Triage System
         
         Args:
             api_key (str): API key for the LLM service
-            llm_backend (str): LLM backend to use (default: claude-3-opus-20240229)
+            llm_backend (str): LLM model to use
             verbose (bool): Whether to print verbose output
         """
         self.api_key = api_key
@@ -179,6 +179,19 @@ class ClinicalTriageSystem:
         )
         
         return quick_ref_file
+
+    def generate_differential_diagnoses(self):
+        """Generate potential differential diagnoses based on the assessment"""
+        from utils.differential_diagnoses import generate_differential_diagnoses
+        
+        # Generate the differential diagnoses file
+        diff_dx_file = generate_differential_diagnoses(
+            case_id=self.case_id,
+            assessment_results=self.assessment_results,
+            output_dir="differential_diagnoses"  # Create a new directory for these files
+        )
+        
+        return diff_dx_file
 
 def main():
     parser = argparse.ArgumentParser(description="Clinical Triage System")

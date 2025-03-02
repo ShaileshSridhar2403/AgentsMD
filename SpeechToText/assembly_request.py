@@ -10,14 +10,17 @@ aai.settings.api_key = os.getenv("ASSEMBLYAI_API_KEY")
 
 def transcribe_audio(audio_file, output_file, speackers_expected=2):
     config = aai.TranscriptionConfig(
-    speaker_labels=True,
-    speakers_expected=speackers_expected
+        speaker_labels=False
     )
     transcript = aai.Transcriber().transcribe(audio_file, config)
-    dialogues = []
-    for utterance in transcript.utterances:
-        dialogues.append(f"Speaker {utterance.speaker}: {utterance.text}")
-        print(f"Speaker {utterance.speaker}: {utterance.text}")
+    
+    # Since we're not using speaker labels, we'll just get the full transcript
+    transcription_text = transcript.text
+    print(f"Transcription: {transcription_text}")
+    
+    # Write the transcription to the output file
     with open(output_file, "w") as f:
-        f.write("\n".join(dialogues))
-    return dialogues
+        f.write(transcription_text)
+    
+    # Return the transcription as a single string instead of a list of dialogues
+    return transcription_text

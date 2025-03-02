@@ -6,7 +6,7 @@ from utils.query_model import query_model
 from utils.esi_examples import load_esi_examples, format_examples_for_prompt
 
 class AgentDiscussion:
-    def __init__(self, agents, model="gpt-4o-mini", api_key=None, max_rounds=3):
+    def __init__(self, agents, model="o1-mini", api_key=None, max_rounds=3):
         """
         Initialize the Agent Discussion framework
         

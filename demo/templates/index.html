@@ -6,6 +6,8 @@
     <title>AI Triage System Demo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown.min.css">
     <style>
         :root {
             --primary-color: #4361ee;
@@ -180,15 +182,14 @@
         }
         
         .content-display {
-            white-space: pre-wrap;
-            font-family: 'Consolas', 'Monaco', monospace;
-            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
             padding: 20px;
             border-radius: var(--border-radius);
             max-height: 500px;
             overflow-y: auto;
             line-height: 1.6;
-            color: #333;
+            color: #24292e;
             border: 1px solid #e0e0e0;
         }
         
@@ -285,6 +286,89 @@
         .esi-3 { background-color: #ffca3a; color: black; }
         .esi-4 { background-color: #8ac926; color: white; }
         .esi-5 { background-color: #1982c4; color: white; }
+        
+        /* Update the markdown-body styles for better readability */
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 100%;
+            margin: 0 auto;
+            color: #24292e;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .markdown-body h1,
+        .markdown-body h2 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+            color: #24292e;
+        }
+        
+        .markdown-body h3,
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            color: #24292e;
+            margin-top: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body p {
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body pre {
+            background-color: #f6f8fa;
+            border-radius: 3px;
+            padding: 16px;
+            overflow: auto;
+        }
+        
+        .markdown-body code {
+            background-color: rgba(27, 31, 35, 0.05);
+            border-radius: 3px;
+            padding: 0.2em 0.4em;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            color: #24292e;
+        }
+        
+        .markdown-body table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body table th,
+        .markdown-body table td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+        
+        .markdown-body table tr {
+            background-color: #fff;
+            border-top: 1px solid #c6cbd1;
+        }
+        
+        .markdown-body table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        
+        .markdown-body ul,
+        .markdown-body ol {
+            padding-left: 2em;
+            margin-top: 0;
+            margin-bottom: 16px;
+        }
+        
+        .markdown-body blockquote {
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            margin: 0 0 16px 0;
+        }
     </style>
 </head>
 <body>
@@ -310,7 +394,34 @@
                         </div>
                         
                         <div class="form-group mb-3">
-                            <button type="submit" class="btn btn-primary">
+                            <div class="recording-controls">
+                                <button type="button" id="start-recording" class="btn btn-outline-primary">
+                                    <i class="fas fa-microphone me-2"></i>Start Recording
+                                </button>
+                                <button type="button" id="stop-recording" class="btn btn-outline-danger" style="display: none;">
+                                    <i class="fas fa-stop-circle me-2"></i>Stop Recording
+                                </button>
+                                <span id="recording-status" class="ms-2" style="display: none;">
+                                    <i class="fas fa-circle text-danger recording-indicator"></i> Recording...
+                                </span>
+                            </div>
+                            <div id="transcription-status" class="mt-2" style="display: none;">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Transcribing...</span>
+                                </div>
+                                <span class="ms-2">Transcribing audio...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <select class="form-select" id="model-select" name="model">
+                                <option value="o1-mini" selected>OpenAI o1-mini</option>
+                                <option value="gpt-4o">OpenAI GPT-4o</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <button type="submit" id="analyze-button" class="btn btn-primary">
                                 <i class="fas fa-stethoscope me-2"></i>Analyze Case
                             </button>
                         </div>
@@ -343,19 +454,37 @@
                     <div class="quick-ref-header">
                         <h3>Emergency Severity Index (ESI)</h3>
                         <a id="download-quick-ref" href="#" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-download me-1"></i>Download
+                            <i class="fas fa-download me-1"></i>Download Quick Reference
                         </a>
                     </div>
                     <div id="esi-level-display"></div>
                     <div id="quick-ref-content" class="content-display"></div>
                     
                     <div class="action-buttons">
-                        <button id="view-detailed-output" class="btn btn-secondary">
-                            <i class="fas fa-file-medical-alt me-2"></i>View Detailed Output
+                        <button id="view-detailed-output" class="btn btn-primary">
+                            <i class="fas fa-file-medical-alt me-2"></i>Detailed Output
                         </button>
                         <button id="view-discussion" class="btn btn-info">
-                            <i class="fas fa-comments me-2"></i>View Agent Discussion
+                            <i class="fas fa-comments me-2"></i>Agent Discussion
                         </button>
+                        <button id="view-differential-diagnoses" class="btn btn-success">
+                            <i class="fas fa-stethoscope me-2"></i>Differential Diagnoses
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a id="download-quick-ref" href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i>Download Quick Reference
+                        </a>
+                        <a id="download-detailed-output" href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i>Download Detailed Output
+                        </a>
+                        <a id="download-discussion" href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i>Download Discussion
+                        </a>
+                        <a id="download-differential-diagnoses" href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-download me-1"></i>Download Differential Diagnoses
+                        </a>
                     </div>
                 </div>
             </div>
@@ -404,6 +533,27 @@
         </div>
     </div>
     
+    <!-- Differential Diagnoses Modal -->
+    <div class="modal fade" id="differential-diagnoses-modal" tabindex="-1" aria-labelledby="differential-diagnoses-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="differential-diagnoses-modal-label">Potential Differential Diagnoses</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="differential-diagnoses-content" class="content-display"></div>
+                </div>
+                <div class="modal-footer">
+                    <a id="download-differential-diagnoses-modal" href="/download/differential_diagnoses" class="btn btn-primary">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -421,34 +571,70 @@
             const downloadQuickRef = document.getElementById('download-quick-ref');
             const downloadDetailedOutput = document.getElementById('download-detailed-output');
             const downloadDiscussion = document.getElementById('download-discussion');
+            const viewDifferentialDiagnosesBtn = document.getElementById('view-differential-diagnoses');
+            const differentialDiagnosesContent = document.getElementById('differential-diagnoses-content');
+            const downloadDifferentialDiagnoses = document.getElementById('download-differential-diagnoses');
+            const downloadDifferentialDiagnosesModal = document.getElementById('download-differential-diagnoses-modal');
             
             // Initialize Bootstrap modals
             const detailedOutputModal = new bootstrap.Modal(document.getElementById('detailed-output-modal'));
             const discussionModal = new bootstrap.Modal(document.getElementById('discussion-modal'));
+            const differentialDiagnosesModal = new bootstrap.Modal(document.getElementById('differential-diagnoses-modal'));
             const detailedOutputContent = document.getElementById('detailed-output-content');
             const discussionContent = document.getElementById('discussion-content');
             
+            // Add this to the beginning of the script section
+            const analyzeButton = document.getElementById('analyze-button');
+            
+            // Initialize markdown-it at the beginning of the script
+            const md = window.markdownit({
+                html: false,
+                linkify: true,
+                typographer: true
+            });
+            
             // Function to handle the typing animation
             function typeText(element, text, speed, callback) {
-                let i = 0;
+                // Clear the element first
                 element.innerHTML = '';
                 
-                function type() {
-                    if (i < text.length) {
-                        element.innerHTML += text.charAt(i);
-                        i++;
-                        setTimeout(type, speed);
-                    } else if (callback) {
-                        callback();
-                    }
-                }
+                // Create a container for the rendered markdown
+                const markdownContainer = document.createElement('div');
+                markdownContainer.className = 'markdown-body';
+                element.appendChild(markdownContainer);
                 
-                type();
+                let i = 0;
+                const interval = setInterval(function() {
+                    if (i < text.length) {
+                        // Add the next character
+                        i++;
+                        // Render the markdown as we go
+                        markdownContainer.innerHTML = md.render(text.substring(0, i));
+                        
+                        // Scroll to the bottom
+                        element.scrollTop = element.scrollHeight;
+                    } else {
+                        clearInterval(interval);
+                        if (callback) callback();
+                    }
+                }, speed);
             }
             
             // Function to display content without typing animation
             function displayTextInstantly(element, text) {
-                element.innerHTML = text;
+                // Clear the element first
+                element.innerHTML = '';
+                
+                // Create a container for the rendered markdown
+                const markdownContainer = document.createElement('div');
+                markdownContainer.className = 'markdown-body';
+                element.appendChild(markdownContainer);
+                
+                // Render the markdown
+                markdownContainer.innerHTML = md.render(text);
+                
+                // Scroll to the top
+                element.scrollTop = 0;
             }
             
             // Function to extract ESI level from text
@@ -460,6 +646,10 @@
             // Handle form submission
             triageForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                // Disable button and change text
+                analyzeButton.disabled = true;
+                analyzeButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
                 
                 // Show loading indicator and progress bar
                 loadingIndicator.style.display = 'block';
@@ -480,17 +670,32 @@
                 eventSource.onmessage = function(event) {
                     const data = JSON.parse(event.data);
                     
-                    progressBar.style.width = data.percentage + '%';
-                    progressTask.textContent = data.task;
-                    progressMessage.textContent = data.message;
+                    // Make sure percentage is a number between 0 and 100
+                    const percentage = Math.min(Math.max(parseInt(data.percentage) || 0, 0), 100);
                     
-                    if (data.percentage >= 100 || data.status === 'complete' || data.status === 'error') {
+                    // Update the progress bar width with animation
+                    progressBar.style.transition = 'width 0.5s ease';
+                    progressBar.style.width = percentage + '%';
+                    progressBar.setAttribute('aria-valuenow', percentage);
+                    
+                    // Update the task and message text
+                    progressTask.textContent = data.task || 'Processing...';
+                    progressMessage.textContent = data.message || '';
+                    
+                    // Log progress for debugging
+                    console.log(`Progress update: ${percentage}% - ${data.task} - ${data.message}`);
+                    
+                    if (percentage >= 100 || data.status === 'complete' || data.status === 'error') {
                         eventSource.close();
                         
                         if (data.status === 'error') {
                             loadingIndicator.style.display = 'none';
                             progressContainer.style.display = 'none';
                             alert('Error: ' + data.message);
+                            
+                            // Reset button
+                            analyzeButton.disabled = false;
+                            analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                             return;
                         }
                         
@@ -511,6 +716,10 @@
                         progressContainer.style.display = 'none';
                         alert('Error: ' + data.error);
                         eventSource.close();
+                        
+                        // Reset button
+                        analyzeButton.disabled = false;
+                        analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                     }
                 })
                 .catch(error => {
@@ -518,6 +727,10 @@
                     progressContainer.style.display = 'none';
                     alert('Error: ' + error.message);
                     eventSource.close();
+                    
+                    // Reset button
+                    analyzeButton.disabled = false;
+                    analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                 });
             });
             
@@ -547,14 +760,27 @@
                             downloadQuickRef.href = '/download/quick_ref';
                             downloadDetailedOutput.href = '/download/detailed_output';
                             downloadDiscussion.href = '/download/discussion';
+                            downloadDifferentialDiagnoses.href = '/download/differential_diagnoses';
                             
                             // Enable/disable buttons based on available files
                             viewDetailedOutputBtn.disabled = !data.has_detailed_output;
                             viewDiscussionBtn.disabled = !data.has_discussion;
+                            viewDifferentialDiagnosesBtn.disabled = !data.has_differential_diagnoses;
+                            
+                            // Show/hide download links based on available files
+                            downloadDifferentialDiagnoses.style.display = data.has_differential_diagnoses ? 'inline-block' : 'none';
+                            
+                            // Reset analyze button
+                            analyzeButton.disabled = false;
+                            analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                         } else if (data.status === 'error') {
                             loadingIndicator.style.display = 'none';
                             progressContainer.style.display = 'none';
                             alert('Error: ' + data.message);
+                            
+                            // Reset analyze button
+                            analyzeButton.disabled = false;
+                            analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                         } else {
                             // Still processing, check again in a second
                             setTimeout(checkStatus, 1000);
@@ -564,6 +790,10 @@
                         loadingIndicator.style.display = 'none';
                         progressContainer.style.display = 'none';
                         alert('Error: ' + error.message);
+                        
+                        // Reset analyze button
+                        analyzeButton.disabled = false;
+                        analyzeButton.innerHTML = '<i class="fas fa-stethoscope me-2"></i>Analyze Case';
                     });
             }
             
@@ -612,6 +842,149 @@
                         alert('Error: ' + error.message);
                     });
             });
+            
+            // Add event listener for the differential diagnoses button
+            viewDifferentialDiagnosesBtn.addEventListener('click', function() {
+                fetch('/view_differential_diagnoses')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        
+                        // Show modal first
+                        differentialDiagnosesModal.show();
+                        
+                        // Then start typing effect
+                        setTimeout(() => {
+                            typeText(differentialDiagnosesContent, data.content, 2, null);
+                        }, 300);
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error.message);
+                    });
+            });
+            
+            // Recording functionality
+            const startRecordingBtn = document.getElementById('start-recording');
+            const stopRecordingBtn = document.getElementById('stop-recording');
+            const recordingStatus = document.getElementById('recording-status');
+            const transcriptionStatus = document.getElementById('transcription-status');
+            const conversationText = document.getElementById('conversation-text');
+            
+            // Check recording status periodically
+            let recordingStatusInterval;
+            
+            startRecordingBtn.addEventListener('click', function() {
+                // Start recording
+                fetch('/recorder/start_recording', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show recording UI
+                        startRecordingBtn.style.display = 'none';
+                        stopRecordingBtn.style.display = 'inline-block';
+                        recordingStatus.style.display = 'inline-block';
+                        
+                        // Start checking recording status
+                        recordingStatusInterval = setInterval(checkRecordingStatus, 1000);
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Error starting recording: ' + error.message);
+                });
+            });
+            
+            stopRecordingBtn.addEventListener('click', function() {
+                // Stop recording
+                fetch('/recorder/stop_recording', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update UI
+                        stopRecordingBtn.style.display = 'none';
+                        recordingStatus.style.display = 'none';
+                        transcriptionStatus.style.display = 'block';
+                        
+                        // Clear interval
+                        clearInterval(recordingStatusInterval);
+                        
+                        // Transcribe the audio
+                        return fetch('/transcriber/transcribe', {
+                            method: 'POST'
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide transcription status
+                    transcriptionStatus.style.display = 'none';
+                    
+                    // Show start recording button again
+                    startRecordingBtn.style.display = 'inline-block';
+                    
+                    if (data.status === 'success') {
+                        // Add transcription to conversation text - no join needed as it's a string now
+                        const transcription = data.transcription;
+                        
+                        // If there's already text, add a newline
+                        if (conversationText.value && conversationText.value.trim() !== '') {
+                            conversationText.value += '\n\n';
+                        }
+                        
+                        conversationText.value += transcription;
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    // Reset UI
+                    transcriptionStatus.style.display = 'none';
+                    startRecordingBtn.style.display = 'inline-block';
+                    alert('Error processing recording: ' + error.message);
+                });
+            });
+            
+            function checkRecordingStatus() {
+                fetch('/recorder/recording_status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && !data.is_recording) {
+                        // Recording stopped unexpectedly
+                        clearInterval(recordingStatusInterval);
+                        stopRecordingBtn.style.display = 'none';
+                        recordingStatus.style.display = 'none';
+                        startRecordingBtn.style.display = 'inline-block';
+                        alert('Recording stopped unexpectedly');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking recording status:', error);
+                });
+            }
+            
+            // Add some CSS for the recording indicator
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { opacity: 1; }
+                    50% { opacity: 0.3; }
+                    100% { opacity: 1; }
+                }
+                .recording-indicator {
+                    animation: pulse 1s infinite;
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
