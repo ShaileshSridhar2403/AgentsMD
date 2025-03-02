@@ -11,6 +11,9 @@ import shutil
 import threading
 import re
 import pdb
+sys.path.append(os.path.abspath(".."))
+from SpeechToText import RecordingManager
+from SpeechToText import assembly_request
 
 # Add parent directory to path so we can import the AI Triage System
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -57,6 +60,9 @@ progress_updates = {
 # Add this right after the imports
 print(f"Flask version: {flask.__version__}")
 print(f"Werkzeug version: {werkzeug.__version__}")
+
+# Add this after creating the Flask app
+recording_manager = RecordingManager()
 
 @app.route('/')
 def index():
@@ -289,6 +295,56 @@ def download_file(file_type):
         )
     else:
         return jsonify({"error": "File not found"}), 404
+
+@app.route('/recorder/start_recording', methods=['POST'])
+def start_recording():
+    success = recording_manager.start_recording()
+    if success:
+        return jsonify({"status": "success", "message": "Recording started"}), 200
+    else:
+        return jsonify({"status": "error", "message": "Recording already in progress"}), 400
+
+@app.route('/recorder/stop_recording', methods=['POST'])
+def stop_recording():
+    # Create recordings directory if it doesn't exist
+    os.makedirs('recordings', exist_ok=True)
+    
+    # Generate unique filename using timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"recordings/audio.wav"
+    
+    success = recording_manager.stop_recording(filename)
+    if success:
+        return jsonify({
+            "status": "success", 
+            "message": "Recording stopped and saved",
+            "filename": filename
+        }), 200
+    else:
+        return jsonify({
+            "status": "error", 
+            "message": "No recording in progress"
+        }), 400
+
+@app.route('/recorder/recording_status', methods=['GET'])
+def recording_status():
+    is_recording = recording_manager.is_currently_recording()
+    return jsonify({
+        "status": "success",
+        "is_recording": is_recording
+    }), 200
+
+@app.route('/transcriber/transcribe', methods=['POST'])
+def transcribe_audio():
+    # Create transcriptions directory if it doesn't exist
+    os.makedirs('transcriptions', exist_ok=True)
+    
+    filename = f"recordings/audio.wav"
+    transcription = assembly_request.transcribe_audio(filename, "transcriptions/transcription.txt")
+    return jsonify({
+        "status": "success",
+        "transcription": transcription
+    }), 200
 
 if __name__ == '__main__':
     # Run the app
