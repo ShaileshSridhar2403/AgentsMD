@@ -2,6 +2,8 @@ import os
 import argparse
 import json
 from datetime import datetime
+import time
+import re
 
 # Import using direct paths
 import sys
@@ -57,52 +59,41 @@ class ClinicalTriageSystem:
     
     def process_conversation(self, conversation_text):
         """
-        Process a patient-nurse conversation through agent discussion
+        Process a patient conversation and determine ESI level
         
         Args:
-            conversation_text (str): The text of the conversation
+            conversation_text (str): The patient conversation text
             
         Returns:
-            dict: Triage assessment results with ESI level
+            dict: The assessment results
         """
-        # Generate a case ID if not already set
-        if not self.case_id:
-            self.case_id = self._generate_case_id()
+        # Generate a unique case ID
+        case_id = f"case_{int(time.time())}"
         
-        # Create a timestamp for this assessment
-        current_timestamp = datetime.now()
-        
-        if self.verbose:
-            print(f"Processing case {self.case_id}...")
-            print("Beginning agent discussion for ESI determination...")
-        
-        # Conduct agent discussion to determine ESI level
-        discussion_result = self.discussion.deliberate(
+        # Start the agent discussion
+        discussion_file = self.discussion.deliberate(
             conversation_text=conversation_text,
-            case_id=self.case_id
+            case_id=case_id
         )
         
-        # Store and return results
-        self.assessment_results = {
-            "case_id": self.case_id,
-            "timestamp": current_timestamp.isoformat(),
-            "esi_level": discussion_result["esi_level"],
-            "confidence": discussion_result["confidence"],
-            "justification": discussion_result["justification"],
-            "recommended_actions": discussion_result["recommended_actions"],
-            "discussion_summary": discussion_result["discussion_summary"]
-        }
+        # Extract the assessment results from the discussion
+        assessment_results = self.extract_assessment(discussion_file)
         
-        # Save the assessment results to a file
-        self.save_assessment_results()
+        # Store the results
+        self.case_id = case_id
+        self.conversation_text = conversation_text
+        self.assessment_results = assessment_results
         
-        # Generate quick reference for nurses
-        self.generate_quick_reference()
+        # Generate the quick reference
+        quick_ref_file = self.generate_quick_reference()
         
-        if self.verbose:
-            print(f"ESI determination complete: Level {discussion_result['esi_level']}")
+        # Generate detailed output
+        detailed_output_file = self.generate_detailed_output()
         
-        return self.assessment_results
+        # Generate differential diagnoses
+        differential_diagnoses_file = self.generate_differential_diagnoses()
+        
+        return assessment_results
     
     def save_assessment_results(self):
         """Save the assessment results to a file"""
@@ -184,14 +175,133 @@ class ClinicalTriageSystem:
         """Generate potential differential diagnoses based on the assessment"""
         from utils.differential_diagnoses import generate_differential_diagnoses
         
-        # Generate the differential diagnoses file
-        diff_dx_file = generate_differential_diagnoses(
-            case_id=self.case_id,
-            assessment_results=self.assessment_results,
-            output_dir="differential_diagnoses"  # Create a new directory for these files
+        try:
+            # Generate the differential diagnoses file
+            diff_dx_file = generate_differential_diagnoses(
+                case_id=self.case_id,
+                assessment_results=self.assessment_results,
+                output_dir="differential_diagnoses"  # Create a new directory for these files
+            )
+            
+            # Ensure the result is a string
+            if not isinstance(diff_dx_file, (str, bytes, os.PathLike)):
+                if diff_dx_file is None:
+                    return None
+                return str(diff_dx_file)
+            
+            return diff_dx_file
+        except Exception as e:
+            print(f"Error generating differential diagnoses: {str(e)}")
+            return None
+
+    def extract_assessment(self, discussion_file):
+        """
+        Extract the assessment results from the discussion file
+        
+        Args:
+            discussion_file (str): Path to the discussion file
+            
+        Returns:
+            dict: The assessment results
+        """
+        # Read the discussion file
+        with open(discussion_file, 'r') as f:
+            discussion_text = f.read()
+        
+        # Extract the ESI level
+        esi_match = re.search(r'ESI Level: (\d)', discussion_text)
+        esi_level = esi_match.group(1) if esi_match else None
+        
+        # Extract the justification
+        justification_match = re.search(r'Justification:(.*?)(?=\n\n|$)', discussion_text, re.DOTALL)
+        justification = justification_match.group(1).strip() if justification_match else ""
+        
+        # Extract the recommended actions - THIS IS THE KEY PART TO FIX
+        actions_match = re.search(r'Recommended Actions:(.*?)(?=\n\n|$)', discussion_text, re.DOTALL)
+        if actions_match:
+            actions_text = actions_match.group(1).strip()
+            # Split by numbered items or bullet points and clean up
+            actions = [re.sub(r'^\d+\.\s*|\*\s*', '', action.strip()) 
+                      for action in re.split(r'\n\d+\.|\n\*', actions_text) 
+                      if action.strip()]
+        else:
+            # If no actions found, generate them based on the ESI level and justification
+            actions = self.generate_actions_from_assessment(esi_level, justification)
+        
+        # Extract the discussion summary
+        summary_match = re.search(r'Discussion Summary:(.*?)(?=\n\n|$)', discussion_text, re.DOTALL)
+        summary = summary_match.group(1).strip() if summary_match else ""
+        
+        # Calculate confidence
+        confidence = 80  # Default confidence
+        confidence_match = re.search(r'Confidence: (\d+)%', discussion_text)
+        if confidence_match:
+            confidence = int(confidence_match.group(1))
+        
+        # Extract chief complaint if available
+        chief_complaint_match = re.search(r'Chief Complaint:(.*?)(?=\n\n|$)', discussion_text, re.DOTALL)
+        chief_complaint = chief_complaint_match.group(1).strip() if chief_complaint_match else None
+        
+        return {
+            "case_id": self.case_id,
+            "esi_level": esi_level,
+            "confidence": confidence,
+            "justification": justification,
+            "recommended_actions": actions,
+            "discussion_summary": summary,
+            "chief_complaint": chief_complaint
+        }
+
+    def generate_actions_from_assessment(self, esi_level, justification):
+        """
+        Generate recommended actions based on ESI level and justification
+        when no actions are found in the discussion
+        
+        Args:
+            esi_level (str): The ESI level (1-5)
+            justification (str): The justification text
+            
+        Returns:
+            list: List of recommended actions
+        """
+        from utils.query_model import query_model
+        
+        # Create a prompt for generating actions
+        prompt = f"""
+        Based on the following patient assessment with ESI level {esi_level}, 
+        generate a list of 3-5 specific recommended actions for the healthcare team.
+        
+        Assessment: {justification}
+        
+        The actions should be specific to this patient's condition and ESI level.
+        Format your response as a numbered list of actions only, without any introduction or explanation.
+        """
+        
+        # System prompt for the model
+        system_prompt = """
+        You are an expert emergency medicine physician. 
+        Your task is to recommend specific actions for the healthcare team based on a patient assessment.
+        Focus on practical, actionable steps that are appropriate for the patient's ESI level and condition.
+        Provide only the numbered list of actions, without any additional text.
+        """
+        
+        # Generate the actions using the model
+        model_response = query_model(
+            model_str=self.llm_backend,
+            system_prompt=system_prompt,
+            prompt=prompt,
+            openai_api_key=self.api_key
         )
         
-        return diff_dx_file
+        # Parse the response into a list of actions
+        actions = []
+        for line in model_response.strip().split('\n'):
+            # Remove numbering and clean up
+            clean_line = re.sub(r'^\d+\.\s*|\*\s*', '', line.strip())
+            if clean_line:
+                actions.append(clean_line)
+        
+        return actions
 
 def main():
     parser = argparse.ArgumentParser(description="Clinical Triage System")

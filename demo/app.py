@@ -188,95 +188,70 @@ def process_case_task(patient_case, api_key, model="o1-mini"):
             verbose=True
         )
         
-        # Monkey patch the AgentDiscussion.deliberate method to capture progress
-        original_deliberate = triage_system.discussion.deliberate
-        
-        def patched_deliberate(conversation_text, case_id=None):
-            # Update the current task
-            progress_updates["current_task"] = "Agent Discussion"
-            
-            # Call the original method with our progress callback
-            return original_deliberate(
-                conversation_text=conversation_text,
-                case_id=case_id,
-                progress_callback=update_progress
-            )
-        
-        # Replace the method
-        triage_system.discussion.deliberate = patched_deliberate
-        
         # Process the conversation
         results = triage_system.process_conversation(patient_case)
         
+        # Ensure results is properly formatted before saving
+        if not isinstance(results, dict):
+            raise TypeError(f"Expected results to be a dictionary, got {type(results)}")
+        
         # Save the conversation with results
-        save_conversation(
-            conversation_text=patient_case,
-            esi_level=results["esi_level"],
-            case_id=results["case_id"],
-            summary=results["justification"][:100] + "..."  # First 100 chars of justification as summary
-        )
+        if results.get("esi_level"):
+            save_conversation(
+                conversation_text=patient_case,
+                esi_level=results["esi_level"],
+                case_id=results["case_id"],
+                summary=results.get("justification", "")[:100] + "..."  # First 100 chars of justification as summary
+            )
         
         # Update progress for file operations
-        progress_updates["current_task"] = "Generating Output"
-        progress_updates["percentage"] = 90
-        progress_updates["message"] = "Creating output files..."
+        progress_updates["current_task"] = "Generating output files..."
+        progress_updates["percentage"] = 80
+        progress_updates["message"] = "Creating quick reference and detailed reports..."
         
-        case_id = results["case_id"]
-        latest_results["case_id"] = case_id
-        
-        # Create demo directories
-        os.makedirs("demo/quick_ref", exist_ok=True)
-        os.makedirs("demo/results", exist_ok=True)
-        os.makedirs("demo/discussions", exist_ok=True)
-        
-        # Copy quick reference files
-        quick_ref_dir = "quick_ref"
-        quick_ref_files = [f for f in os.listdir(quick_ref_dir) if f.startswith(case_id)]
-        for file in quick_ref_files:
-            src = os.path.join(quick_ref_dir, file)
-            dst = os.path.join("demo/quick_ref", file)
-            shutil.copy2(src, dst)
-            latest_results["quick_ref_file"] = dst
-        
-        # Copy result files
-        results_dir = "results"
-        result_files = [f for f in os.listdir(results_dir) if f.startswith(case_id)]
-        for file in result_files:
-            src = os.path.join(results_dir, file)
-            dst = os.path.join("demo/results", file)
-            shutil.copy2(src, dst)
-            if file.endswith(".txt"):
-                latest_results["detailed_output_file"] = dst
-        
-        # Copy discussion files
-        discussions_dir = "discussions"
-        discussion_files = [f for f in os.listdir(discussions_dir) if f.startswith(case_id)]
-        for file in discussion_files:
-            src = os.path.join(discussions_dir, file)
-            dst = os.path.join("demo/discussions", file)
-            shutil.copy2(src, dst)
-            latest_results["discussion_file"] = dst
-        
-        # Copy differential diagnoses files
-        os.makedirs("demo/differential_diagnoses", exist_ok=True)
+        # Get the output files
+        quick_ref_file = triage_system.generate_quick_reference()
+        detailed_output_file = triage_system.save_assessment_results()
+        discussion_file = triage_system.discussion.get_latest_discussion_file()
         differential_diagnoses_file = triage_system.generate_differential_diagnoses()
-        if differential_diagnoses_file and os.path.exists(differential_diagnoses_file):
-            dst = os.path.join("demo/differential_diagnoses", os.path.basename(differential_diagnoses_file))
-            shutil.copy2(differential_diagnoses_file, dst)
-            latest_results["differential_diagnoses_file"] = dst
+        
+        # Ensure all file paths are strings
+        if not isinstance(quick_ref_file, (str, bytes, os.PathLike)):
+            quick_ref_file = str(quick_ref_file) if quick_ref_file else None
+            
+        if not isinstance(detailed_output_file, (str, bytes, os.PathLike)):
+            detailed_output_file = str(detailed_output_file) if detailed_output_file else None
+            
+        if not isinstance(discussion_file, (str, bytes, os.PathLike)):
+            discussion_file = str(discussion_file) if discussion_file else None
+            
+        if not isinstance(differential_diagnoses_file, (str, bytes, os.PathLike)):
+            differential_diagnoses_file = str(differential_diagnoses_file) if differential_diagnoses_file else None
+        
+        # Store the results
+        latest_results["case_id"] = results["case_id"]
+        latest_results["quick_ref_file"] = quick_ref_file
+        latest_results["detailed_output_file"] = detailed_output_file
+        latest_results["discussion_file"] = discussion_file
+        latest_results["differential_diagnoses_file"] = differential_diagnoses_file
         
         # Update progress
         progress_updates["current_task"] = "Complete"
         progress_updates["percentage"] = 100
-        progress_updates["message"] = f"Triage assessment complete! ESI Level: {results['esi_level']}"
         progress_updates["status"] = "complete"
+        progress_updates["message"] = f"ESI Level {results['esi_level']} determined with {results['confidence']}% confidence"
         
     except Exception as e:
+        # Log the error
+        print(f"Error in process_case_task: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         # Update progress with error
         progress_updates["current_task"] = "Error"
         progress_updates["percentage"] = 100
-        progress_updates["message"] = str(e)
         progress_updates["status"] = "error"
+        progress_updates["message"] = f"Error: {str(e)}"
 
 @app.route('/process', methods=['POST'])
 def process_case():
