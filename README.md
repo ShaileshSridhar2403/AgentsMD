@@ -17,10 +17,8 @@ Agents MD leverages the power of large language models in a collaborative framew
 - **Supportive** of existing medical workflows
 - **Responsive** to time-critical situations
 
-## How It Works
 
-Our system processes nurse-patient conversations and vital signs to determine Emergency Severity Index (ESI) levels, helping medical staff prioritize care efficiently and effectively.
 
-## Get Started
+## Check out our Demo
 
 See our demo folder for a web-based demonstration of the Agents MD triage system in action.
