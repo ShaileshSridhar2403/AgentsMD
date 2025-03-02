@@ -4,7 +4,11 @@
   <img src="demo/static/images/AgentsMDLogo_2.jpeg" alt="Agents MD Logo" width="300">
 </p>
 
-Watching a loved one battle a disease is heartbreaking. Watching them struggle in an overcrowded ER, waiting for care, is devastating. Across the country, emergency rooms are in crisis—overcrowded, understaffed, and overwhelmed. Nurses face impossible workloads, making life-or-death decisions under extreme pressure, while patients endure agonizing delays in time-critical care.
+Watching a loved one battle a disease is heartbreaking.
+
+Watching them struggle in an overcrowded ER, waiting for care, is **devastating**.
+ 
+Across the country, emergency rooms are in crisis—overcrowded, understaffed, and overwhelmed. Nurses face impossible workloads, making life-or-death decisions under extreme pressure, while patients endure agonizing delays in time-critical care.
 
 Agents MD is transforming ER triage by addressing these urgent challenges. Our multi-agentic AI approach brings together competing AI models, each with specialized diagnostic expertise, to refine differential diagnoses in real time. By reducing diagnostic uncertainty and easing the burden on overworked nurses, we help accelerate patient care, enhance accuracy, and mirror the collaborative decision-making of medical teams—ensuring no patient is left waiting when every second counts.
 
