@@ -13,6 +13,7 @@ from agents.triage_nurse import TriageNurseAgent
 from agents.emergency_physician import EmergencyPhysicianAgent
 from agents.medical_consultant import MedicalConsultantAgent
 from utils.agent_discussion import AgentDiscussion
+from utils.schema import AgentAssessments, ESIResult, ClinicalData
 
 class ClinicalTriageSystem:
     def __init__(self, api_key=None, llm_backend="o1-mini", verbose=False):

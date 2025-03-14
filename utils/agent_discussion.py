@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 from utils.query_model import query_model
 from utils.esi_examples import load_esi_examples, format_examples_for_prompt
+from utils.schema import ConsensusResult
+from utils.structured_parser import parse_structured_output
 
 class AgentDiscussion:
     def __init__(self, agents, model="o1-mini", api_key=None, max_rounds=3):
@@ -122,7 +124,7 @@ class AgentDiscussion:
         )
         
         # Parse the consensus result
-        final_result = self._parse_consensus_result(consensus_result)
+        final_result = parse_structured_output(consensus_result, ConsensusResult)
         
         # Add discussion summary
         final_result["discussion_summary"] = self._generate_discussion_summary(discussion_history)

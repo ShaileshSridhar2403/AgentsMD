@@ -850,6 +850,33 @@
                     });
             }
             
+            // Function to start periodic status checking
+            function startStatusCheck() {
+                // Start checking immediately
+                checkStatus();
+                
+                // Set up event source for progress updates
+                const eventSource = new EventSource('/progress');
+                
+                eventSource.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    
+                    // Update progress UI
+                    progressTask.textContent = data.task;
+                    progressBar.style.width = data.percentage + '%';
+                    progressMessage.textContent = data.message;
+                    
+                    // If we're done or there's an error, close the event source
+                    if (data.status === 'complete' || data.status === 'error') {
+                        eventSource.close();
+                    }
+                };
+                
+                eventSource.onerror = function() {
+                    eventSource.close();
+                };
+            }
+            
             // View detailed output
             viewDetailedOutputBtn.addEventListener('click', function() {
                 fetch('/view_detailed_output')

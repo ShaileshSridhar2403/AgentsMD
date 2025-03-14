@@ -1,0 +1,114 @@
+
+DIFFERENTIAL DIAGNOSES
+=====================
+Case ID: CASE-20250302030433
+Generated: 20250302_030554
+
+**Differential Diagnoses for a 42-year-old Male with Persistent Headache and Nasal Congestion**
+
+1. **Acute Sinusitis**
+   - **Supporting Findings:**
+     - 5-day history of persistent headache.
+     - Nasal congestion, a common symptom of sinus infections.
+     - Absence of immediate life-threatening signs suggests a localized issue.
+   - **Additional Tests:**
+     - **Sinus CT Scan:** To evaluate sinus opacification, extent of infection, and rule out complications.
+     - **Nasal Endoscopy:** If structural abnormalities or severe congestion are suspected.
+
+2. **Migraine Headache**
+   - **Supporting Findings:**
+     - Persistent headache could align with migraine patterns.
+     - Nasal congestion may be a vasomotor symptom associated with migraines.
+     - Absence of severe neurological deficits does not rule out migraine.
+   - **Additional Tests:**
+     - **Clinical Evaluation:** Detailed headache history to identify migrainous features (e.g., aura, photophobia).
+     - **MRI of the Brain:** If atypical features are present or to exclude secondary causes.
+
+3. **Tension-Type Headache**
+   - **Supporting Findings:**
+     - Persistent, non-pulsatile headache without neurological deficits.
+     - Often related to muscle tension or stress, which may coexist with nasal congestion from a concurrent condition.
+   - **Additional Tests:**
+     - **Clinical Assessment:** Diagnosis is primarily clinical based on headache characteristics.
+     - **Imaging (if atypical):** Consider CT or MRI if headaches are refractory to treatment or have unusual features.
+
+4. **Viral Upper Respiratory Infection (Common Cold)**
+   - **Supporting Findings:**
+     - Nasal congestion and headache are hallmark symptoms.
+     - Duration of 5 days aligns with typical viral URI progression.
+     - Stable vital signs and absence of severe symptoms suggest a benign course.
+   - **Additional Tests:**
+     - **Clinical Diagnosis:** Usually no specific tests needed.
+     - **Rapid Viral Testing:** If influenza or COVID-19 is suspected to guide management.
+
+5. **Allergic Rhinitis**
+   - **Supporting Findings:**
+     - Nasal congestion coupled with headache can result from allergic reactions.
+     - May present with additional symptoms like itching, sneezing, or watery eyes (if present).
+   - **Additional Tests:**
+     - **Allergy Testing:** Skin prick tests or specific IgE blood tests.
+     - **Nasal Swabs:** To identify eosinophils indicative of allergic inflammation.
+
+6. **Bacterial Sinusitis**
+   - **Supporting Findings:**
+     - Persistent symptoms beyond typical viral URI duration (usually >10 days) but can present earlier if severe.
+     - Potential for purulent nasal discharge, facial pain, and headache.
+   - **Additional Tests:**
+     - **Sinus CT Scan:** To differentiate between viral and bacterial sinusitis.
+     - **Nasal Swab Culture:** To identify bacterial pathogens if indicated.
+
+7. **Meningitis**
+   - **Supporting Findings:**
+     - Persistent headache warrants exclusion, even in absence of classic signs like neck stiffness or altered mental status.
+     - Must-not-miss diagnosis due to potential severity.
+   - **Additional Tests:**
+     - **Lumbar Puncture:** Cerebrospinal fluid analysis to rule out infection.
+     - **Blood Cultures:** If systemic infection is suspected.
+
+8. **Intracranial Hypertension**
+   - **Supporting Findings:**
+     - Persistent headache can be a symptom.
+     - Typically accompanied by vision changes, which are absent here, lowering likelihood.
+   - **Additional Tests:**
+     - **MRI or CT of the Brain:** To assess for signs of increased intracranial pressure.
+     - **Lumbar Puncture:** To measure cerebrospinal fluid pressure.
+
+9. **Cerebral Venous Sinus Thrombosis**
+   - **Supporting Findings:**
+     - Persistent headache with possible sinus-related symptoms.
+     - Rare but significant condition requiring prompt diagnosis.
+   - **Additional Tests:**
+     - **Magnetic Resonance Venography (MRV):** To visualize venous sinuses for thrombosis.
+     - **CT Venogram:** An alternative imaging modality if MRV is unavailable.
+
+10. **Subarachnoid Hemorrhage**
+    - **Supporting Findings:**
+      - Typically presents with sudden, severe headache ("thunderclap"), which is inconsistent with a 5-day history.
+      - Should be considered if symptoms evolve or worsen.
+    - **Additional Tests:**
+      - **Non-Contrast CT Scan of the Head:** Initial imaging choice.
+      - **Lumbar Puncture:** If CT is negative but clinical suspicion remains high.
+
+11. **Temporal Arteritis (Giant Cell Arteritis)**
+    - **Supporting Findings:**
+      - More common in individuals over 50, but can rarely occur in younger patients.
+      - Headache is a primary symptom, often localized to the temporal areas.
+      - May present with jaw claudication, vision changes, which are absent here.
+    - **Additional Tests:**
+      - **Erythrocyte Sedimentation Rate (ESR) and C-Reactive Protein (CRP):** Elevated inflammatory markers support the diagnosis.
+      - **Temporal Artery Biopsy:** Definitive diagnosis if clinical suspicion is high.
+
+12. **Cavernous Sinus Thrombosis**
+    - **Supporting Findings:**
+      - Presents with severe headache, cranial nerve deficits affecting ocular movements.
+      - Presence of nasal congestion may suggest a contiguous spread from sinusitis.
+    - **Additional Tests:**
+      - **MRI with MRV:** To visualize the cavernous sinuses and detect thrombosis.
+      - **CT Angiography:** As an alternative imaging option.
+
+---
+
+**Notes:**
+- **Must-Not-Miss Diagnoses:** Meningitis, Intracranial Hypertension, Cerebral Venous Sinus Thrombosis, and Subarachnoid Hemorrhage are critical to rule out despite lower likelihood due to their potential severity.
+- **Primary Focus:** Given the presenting symptoms and lack of severe neurological deficits, acute sinusitis and migraine are the most likely diagnoses.
+- **Recommended Actions:** Follow the recommended actions to obtain necessary diagnostic tests and consultations to either confirm the primary diagnoses or rule out more serious conditions.
